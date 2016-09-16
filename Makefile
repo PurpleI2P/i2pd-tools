@@ -3,7 +3,7 @@ CXXFLAGS = -g -Wall -std=c++11
 OBJECTS = keygen.o
 INCFLAGS = -I"i2pd"
 LDFLAGS = -Wl,-rpath,/usr/local/lib 
-LIBS = ../i2pd/libi2pd.a -lboost_system -lboost_date_time -lboost_filesystem -lboost_program_options -lssl -lcrypto -lpthread -lrt -lz 
+LIBS = i2pd/libi2pd.a -lboost_system -lboost_date_time -lboost_filesystem -lboost_program_options -lssl -lcrypto -lpthread -lrt -lz 
 
 all: keygen
 
