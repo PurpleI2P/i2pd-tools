@@ -6,6 +6,31 @@ Notice: git submodules are used so make sure to clone this repository recursivel
 
     git clone --recursive https://github.com/purplei2pd/i2pd-tools
 
+## Building
+
+### Dependencies
+
+* boost chrono
+* boost date-time
+* boost filesystem
+* boost program-options
+* libssl
+
+```bash
+sudo apt-get install \
+    libboost-chrono-dev \
+    libboost-date-time-dev \
+    libboost-filesystem-dev \
+    libboost-program-options-dev \
+    libboost-system-dev \
+    libboost-thread-dev \
+    libssl-dev
+```
+
+### Building
+
+    make 
+
 ## Tools included
 
 ### keygen
