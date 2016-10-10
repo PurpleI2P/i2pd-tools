@@ -3,17 +3,21 @@
 #include <stdlib.h>
 #include "Crypto.h"
 #include "Identity.h"
+#include "common/key.hpp"
 
 int main (int argc, char * argv[])
 {
 	if (argc < 2)
 	{
-		std::cout << "Usage: keygen filename <signuture type>" << std::endl;	
+		std::cout << "Usage: keygen filename <signature type>" << std::endl;
 		return -1;
 	}
 	i2p::crypto::InitCrypto (false);
 	i2p::data::SigningKeyType type = i2p::data::SIGNING_KEY_TYPE_DSA_SHA1;	
-	if (argc >= 3) type = atoi (argv[2]);
+	if (argc > 2) {
+		std::string str(argv[2]);
+		type = NameToSigType(str);
+	}
 	auto keys = i2p::data::PrivateKeys::CreateRandomKeys (type);
 	std::ofstream f (argv[1], std::ofstream::binary | std::ofstream::out);
 	if (f)

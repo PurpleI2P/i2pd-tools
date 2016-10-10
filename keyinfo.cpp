@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <unistd.h>
+#include "common/key.hpp"
+
 
 int main(int argc, char * argv[])
 {
@@ -58,7 +60,7 @@ int main(int argc, char * argv[])
     std::cout << "Destination: " << dest->ToBase64() << std::endl;
     std::cout << "Destination Hash: " << ident.ToBase64() << std::endl;
     std::cout << "B32 Address: " << ident.ToBase32() << ".b32.i2p" << std::endl;
-    std::cout << "Signature Type: " << (int) dest->GetSigningKeyType() << std::endl;
+    std::cout << "Signature Type: " << SigTypeToName(dest->GetSigningKeyType()) << std::endl;
     std::cout << "Encryption Type: " << (int) dest->GetCryptoKeyType() << std::endl;
   } else {
     if(print_full) {
