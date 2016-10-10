@@ -55,14 +55,11 @@ uint16_t NameToSigType(const std::string & keyname)
 
   if(name.find("P384") != npos) return i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA384_P384;
   
-  if(name.find("RSA2048") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA256_2048;
-  if(name.find("RSA-2048") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA256_2048;
+  if(name.find("RSA-SHA265") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA256_2048;
   
-  if(name.find("RSA3072") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072;
-  if(name.find("RSA-3072") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072;
+  if(name.find("RSA-SHA384") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072;
   
-  if(name.find("RSA4096") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096;
-  if(name.find("RSA-4096") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096;
+  if(name.find("RSA-SHA512") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096;
 
   if(name.find("ED25519") != npos) return i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
   

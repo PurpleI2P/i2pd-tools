@@ -22,17 +22,21 @@ Make an destination key with a certain key type
 
     ./keygen privkey.dat <number>
 
+or
 
-| key type             | number |
+    ./keygen privkey.dat <key name>
+
+
+| key name             | number |
 | -------------------- | ------ |
-| DSA SHA1             | 0      |
-| ECDSA_SHA256_P256    | 1      |
-| ECDSA_SHA384_P384    | 2      |
-| ECDSA_SHA512_P521    | 3      |
-| RSA_SHA256_2048      | 4      |
-| RSA_SHA384_3072      | 5      |
-| RSA_SHA512_4096      | 6      |
-| EDDSA_SHA512_ED25519 | 7      |
+| DSA-SHA1             | 0      |
+| ECDSA-SHA256-P256    | 1      |
+| ECDSA-SHA384-P384    | 2      |
+| ECDSA-SHA512-P521    | 3      |
+| RSA-SHA256-2048      | 4      |
+| RSA-SHA384-3072      | 5      |
+| RSA-SHA512-4096      | 6      |
+| EDDSA-SHA512-ED25519 | 7      |
 
 
 
