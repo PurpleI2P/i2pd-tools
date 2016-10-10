@@ -1,0 +1,13 @@
+# emacs files
+*~
+*\#*
+
+# object files
+*.o
+
+# built binaries
+keygen
+keyinfo
+
+# private key files
+*.dat
