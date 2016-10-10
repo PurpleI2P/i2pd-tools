@@ -6,7 +6,7 @@
 
 int main (int argc, char * argv[])
 {
-	if (argc < 3)
+	if (argc < 2)
 	{
 		std::cout << "Usage: keygen filename <signuture type>" << std::endl;	
 		return -1;
