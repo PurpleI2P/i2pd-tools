@@ -1,4 +1,4 @@
-var url = "ws://127.0.0.1:7666";
+var url = "ws://127.0.0.1:7665";
 
 var l = document.getElementById("log");
 var c = document.getElementById("main");
@@ -246,7 +246,8 @@ setInterval(function() {
     if( h == "length") continue;
     drawPeer(getPeer(h));
   }
-  
+
+  var newPeers = {};
   for ( var ed in e ) {
     var edge = e[ed];
     draw.beginPath();
@@ -254,9 +255,14 @@ setInterval(function() {
     draw.lineWidth = edge[3];
     draw.moveTo(edge[0].x * c.width, edge[0].y * c.height);
     draw.lineTo(edge[1].x * c.width, edge[1].y * c.height);
-    draw.stroke();
-    
+    newPeers[edge[0].name] = edge[0];
+    newPeers[edge[1].name] = edge[1];
+    draw.stroke();  
   }
+
+  peers = newPeers;
+  
+  
   
   // draw nodes
   
