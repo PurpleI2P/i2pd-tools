@@ -248,6 +248,7 @@ setInterval(function() {
   }
 
   var newPeers = {};
+  var counter = 0;
   for ( var ed in e ) {
     var edge = e[ed];
     draw.beginPath();
@@ -255,12 +256,18 @@ setInterval(function() {
     draw.lineWidth = edge[3];
     draw.moveTo(edge[0].x * c.width, edge[0].y * c.height);
     draw.lineTo(edge[1].x * c.width, edge[1].y * c.height);
-    newPeers[edge[0].name] = edge[0];
-    newPeers[edge[1].name] = edge[1];
+    if(!newPeers[edge[0].name]) {
+      newPeers[edge[0].name] = edge[0];
+      counter ++;
+    }
+    if(!newPeers[edge[1].name]) {
+      newPeers[edge[1].name] = edge[1];
+      counter ++;
+    }
     draw.stroke();  
   }
-
-  peers = newPeers;
+  newPeers.length = counter;
+  tpeers = newPeers;
   
   
   
