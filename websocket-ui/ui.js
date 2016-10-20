@@ -1,6 +1,6 @@
 
 
-
+var l = document.getElementById("log");
 var c = document.getElementById("main");
 var nodes = {
   length: 0,
@@ -37,8 +37,37 @@ function nodeRecv(ident, n) {
   nodes[ident].recv += parseInt(n);
 }
 
+var tunnels = {
+  length : 0
+};
 
-var ws = new WebSocket("ws://127.0.0.1:7665/");
+function tunnelBuild(peers, tid, inbound) {
+  logit("building tunnel "+tid);
+}
+
+function tunnelLatency(tid, latency) {
+  logit("tunnel "+tid+" latency "+latency+"ms");
+}
+
+function tunnelState(tid, state) {
+  logit("tunnel "+tid+" entered state "+state);
+}
+
+function tunnelCreated(tid) {
+  logit("tunnel "+tid+" was created");
+}
+
+function logit(msg) {
+  console.log(msg);
+  var t = document.createTextNode(msg);
+  var e = document.createElement("div");
+  e.appendChild(t);
+  l.appendChild(e);
+  while(l.children.length > 50)
+    l.removeChild(l.children[0]);
+}
+
+var ws = new WebSocket("ws://127.0.0.1:7666/");
 ws.onmessage = function(ev) {
   var j = JSON.parse(ev.data);
   if (j) {
@@ -50,6 +79,16 @@ ws.onmessage = function(ev) {
       nodeSend(j.ident, j.number);
     } else if (j.type == "transport.recvmsg") {
       nodeRecv(j.ident, j.number);
+    } else if (j.type == "tunnel.build") {
+      tunnelBuild(j.value, j.tid, j.inbound);
+    } else if (j.type == "tunnel.latency") {
+      tunnelLatency(j.tid, j.value);
+    } else if (j.type == "tunnel.state") {
+      tunnelState(j.tid, j.value);
+    } else if (t.type == "tunnels.created") {
+      tunnelCreated(j.tid);
+    } else {
+      logit("message: "+j.type);
     }
   }
 };
@@ -67,9 +106,9 @@ setInterval(function() {
   var centerx = c.width / 2;
   var centery = c.height / 2;
 
-  var mult = Math.log(nodes.length) + 0.5;
+  var mult = Math.log(10 + nodes.length) + 0.5;
   
-  var outer_r = (n * mult);
+  var outer_r = ((10 + n) * mult);
   if(outer_r > c.width || outer_r > c.height) {
     var smaller = c.height;
     if(c.width < smaller) smaller = c.width;
