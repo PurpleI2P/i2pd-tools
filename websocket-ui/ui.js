@@ -210,7 +210,7 @@ function drawPeer(p) {
 
 function getTraffic(node) {
   if (!node) return 1;
-  return 1.0 + ( (node.send + node.recv + 1.0) / 5.0) ;
+  return 1.0 + ( (node.send + node.recv + 1.0) / 1.5) ;
 }
 var draw = c.getContext("2d");
 var ticks = 0;
@@ -316,11 +316,8 @@ setInterval(function() {
       txt += "| "+leftpad(nodes[ident].recv+" msg/s in", 15)+ " | "+leftpad(nodes[ident].send+" msg/s out", 15)+" |";
       draw.fillText(txt, 100, 20 + (i*10));
     }
-    if( tick % 10 == 0) {
-      
-      nodes[ident].recv = 0;
-      nodes[ident].send = 0;
-    }
+    nodes[ident].recv = 0;
+    nodes[ident].send = 0;
     draw.moveTo(x0, y0);
 
     draw.strokeStyle = "#dfa";
