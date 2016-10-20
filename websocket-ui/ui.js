@@ -56,18 +56,25 @@ ws.onmessage = function(ev) {
 
 var draw = c.getContext("2d");
 
-draw.font = "10px monospace";
-
 setInterval(function() {
-  draw.clearRect(0, 0, c.width, c.height);
-
+  draw.canvas.width  = window.innerWidth - 100;
+  draw.canvas.height = window.innerHeight - 100;
+  draw.font = "10px monospace";
   
+  draw.clearRect(0, 0, c.width, c.height);
   var n = nodes.length;
   
   var centerx = c.width / 2;
   var centery = c.height / 2;
 
-  var outer_r = (n * 5);
+  var mult = Math.log(nodes.length) + 0.5;
+  
+  var outer_r = (n * mult);
+  if(outer_r > c.width || outer_r > c.height) {
+    var smaller = c.height;
+    if(c.width < smaller) smaller = c.width;
+    outer_r = smaller - 20;
+  }
   
   var inner_r = outer_r / 2;
   draw.beginPath();
@@ -112,8 +119,10 @@ setInterval(function() {
     draw.beginPath();
     var txt = ident.substr(0, 6);
     draw.fillText(txt, x2-5, y2-5);
-    txt += "| "+leftpad(nodes[ident].recv+" msg/s in", 15)+ " | "+leftpad(nodes[ident].send+" msg/s out", 15)+" |";
-    draw.fillText(txt, 100, 20 + (i*10));
+    if(i * 10 < c.height) {
+      txt += "| "+leftpad(nodes[ident].recv+" msg/s in", 15)+ " | "+leftpad(nodes[ident].send+" msg/s out", 15)+" |";
+      draw.fillText(txt, 100, 20 + (i*10));
+    }
     draw.moveTo(x0, y0);
 
     draw.strokeStyle = "#dfa";
