@@ -60,8 +60,6 @@ draw.font = "10px monospace";
 
 setInterval(function() {
   draw.clearRect(0, 0, c.width, c.height);
-  draw.fillStyle = "white";
-  draw.fillText("Active Peers: " + nodes.length, 500, 25);
 
   
   var n = nodes.length;
@@ -89,13 +87,18 @@ setInterval(function() {
   }
 
   idents = idents.sort();
-  
+  var in_traffic = 0;
+  var out_traffic = 0;
   for (var i = 0; i < idents.length; i++) {
     var ident = idents[i];
     rad += ( Math.PI * 2 ) / nodes.length;
+
+    in_traffic += nodes[ident].recv;
+    out_traffic += nodes[ident].send;
+    
     var send = nodes[ident].send * 5;
     var recv = nodes[ident].recv * 5;
-    
+
     var x0 = (Math.cos(rad) * inner_r) + centerx;
     var y0 = (Math.sin(rad) * inner_r) + centery;
     var x1 = (Math.cos(rad) * (inner_r + send )) + centerx;
@@ -154,4 +157,8 @@ setInterval(function() {
     nodes[ident].send = 0;
     nodes[ident].recv = 0;
   }
+  draw.fillStyle = "white";
+  draw.fillText("Active Peers | " +leftpad(" "+ nodes.length, 10), 500, 25);
+  draw.fillText("In Traffic   | "+leftpad(" "+in_traffic+" msg/s", 10), 500, 35);
+  draw.fillText("Out Traffic  | "+leftpad(" "+out_traffic+" msg/s", 10), 500, 45);
 }, 1000);
