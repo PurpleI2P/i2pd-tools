@@ -243,6 +243,7 @@ setInterval(function() {
   }
 
   for ( var h in tpeers ) {
+    if( h == "length") continue;
     drawPeer(getPeer(h));
   }
   
