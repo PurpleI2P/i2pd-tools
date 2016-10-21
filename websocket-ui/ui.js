@@ -96,8 +96,8 @@ function tunnelTestFailed(tid) {
 function tunnelFailed(tid) {
   if(!tunnels[tid]) return;
   logit("Tunnel " + tid + " has failed");
-  tunnels[tid].state = "failed";
-  tunnels[tid].color = "red";
+  delete tunnels[tid];
+  tunnels.length--;
 }
 
 function tunnelExpiring(tid) {
@@ -130,7 +130,7 @@ function tunnelCreated(tid) {
 
 function logit(msg) {
   console.log(msg);
-  var t = document.createTextNode(msg);
+  var t = document.createTextNode(leftpad(msg, 25));
   var e = document.createElement("div");
   e.appendChild(t);
   l.appendChild(e);
@@ -326,10 +326,11 @@ setInterval(function() {
     draw.beginPath();
     var txt = ident.substr(0, 6);
     draw.fillText(txt, x1-5, y1-5);
+    /**
     if(i * 10 < c.height) {
       txt += "| "+leftpad(nodes[ident].recv+" msg/s in", 15)+ " | "+leftpad(nodes[ident].send+" msg/s out", 15)+" |";
       draw.fillText(txt, 100, 20 + (i*10));
-    }
+    } */
     nodes[ident].recv = 0;
     nodes[ident].send = 0;
     draw.moveTo(x0, y0);
@@ -376,3 +377,5 @@ setInterval(function() {
   }
   tick ++;
 }, 100);
+
+logit("loaded");
