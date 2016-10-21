@@ -1,4 +1,4 @@
-var url = "ws://127.0.0.1:7666";
+var url = "ws://127.0.0.1:7665";
 
 var l = document.getElementById("log");
 var c = document.getElementById("main");
@@ -96,8 +96,8 @@ function tunnelTestFailed(tid) {
 function tunnelFailed(tid) {
   if(!tunnels[tid]) return;
   logit("Tunnel " + tid + " has failed");
-  tunnels[tid].state = "failed";
-  tunnels[tid].color = "red";
+  delete tunnels[tid];
+  tunnels.length--;
 }
 
 function tunnelExpiring(tid) {
@@ -130,7 +130,7 @@ function tunnelCreated(tid) {
 
 function logit(msg) {
   console.log(msg);
-  var t = document.createTextNode(msg);
+  var t = document.createTextNode(leftpad(msg, 25));
   var e = document.createElement("div");
   e.appendChild(t);
   l.appendChild(e);
@@ -243,9 +243,12 @@ setInterval(function() {
   }
 
   for ( var h in tpeers ) {
+    if( h == "length") continue;
     drawPeer(getPeer(h));
   }
-  
+
+  var newPeers = {};
+  var counter = 0;
   for ( var ed in e ) {
     var edge = e[ed];
     draw.beginPath();
@@ -253,9 +256,20 @@ setInterval(function() {
     draw.lineWidth = edge[3];
     draw.moveTo(edge[0].x * c.width, edge[0].y * c.height);
     draw.lineTo(edge[1].x * c.width, edge[1].y * c.height);
-    draw.stroke();
-    
+    if(!newPeers[edge[0].name]) {
+      newPeers[edge[0].name] = edge[0];
+      counter ++;
+    }
+    if(!newPeers[edge[1].name]) {
+      newPeers[edge[1].name] = edge[1];
+      counter ++;
+    }
+    draw.stroke();  
   }
+  newPeers.length = counter;
+  tpeers = newPeers;
+  
+  
   
   // draw nodes
   
@@ -312,10 +326,11 @@ setInterval(function() {
     draw.beginPath();
     var txt = ident.substr(0, 6);
     draw.fillText(txt, x1-5, y1-5);
+    /**
     if(i * 10 < c.height) {
       txt += "| "+leftpad(nodes[ident].recv+" msg/s in", 15)+ " | "+leftpad(nodes[ident].send+" msg/s out", 15)+" |";
       draw.fillText(txt, 100, 20 + (i*10));
-    }
+    } */
     nodes[ident].recv = 0;
     nodes[ident].send = 0;
     draw.moveTo(x0, y0);
@@ -362,3 +377,5 @@ setInterval(function() {
   }
   tick ++;
 }, 100);
+
+logit("loaded");

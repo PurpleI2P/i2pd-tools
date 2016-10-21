@@ -3,11 +3,36 @@
     <title> websocket events </title>
     <script type="text/javascript" src="leftpad.js">
     </script>
+    <style>
+      pre#log {
+        z-index: 1;
+        color: white;
+        position: fixed;
+        right: 0px;
+        top: 0px;
+        height: 100%;
+        font-size: 10px;
+        box-shadow: 0px 0px 10px 10px #1a1a1a;
+        background: rgba(1,1,1,0.5);
+        border-radius: 5px;
+      }
+
+      body, canvas#main {
+       background: #222;
+      }
+      
+      canvas#main {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        z-index: -1;
+      }
+      
+    </style>
   </head>
-  <body style="background: #222;">
-    <pre id="log" style="z-index: 1; color: white; position: fixed; right: 0px; top: 0px; font-size: 10px;">
-    </pre>
-    <canvas id="main" style="background: #222; position: fixed; left: 0px; top: 0px; z-index: -1">
+  <body>
+    <pre id="log"></pre>
+    <canvas id="main">
     </canvas>
     <script type="text/javascript" src="ui.js">
     </script>
