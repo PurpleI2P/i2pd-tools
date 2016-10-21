@@ -1,5 +1,3 @@
-var url = "ws://127.0.0.1:7665";
-
 var l = document.getElementById("log");
 var c = document.getElementById("main");
 var nodes = {
@@ -130,7 +128,7 @@ function tunnelCreated(tid) {
 
 function logit(msg) {
   console.log(msg);
-  var t = document.createTextNode(leftpad(msg, 25));
+  var t = document.createTextNode(msg);
   var e = document.createElement("div");
   e.appendChild(t);
   l.appendChild(e);
@@ -138,38 +136,63 @@ function logit(msg) {
     l.removeChild(l.children[0]);
 }
 
-var ws = new WebSocket(url);
-ws.onclose = function (ev) {
-  nodes = { length: 0 };
-  tpeers = { length: 0 };
+function socketClosed() {
+  var b = document.getElementById("connect-button");
+  b.onclick = startui
+  b.value = "connect";
 }
-ws.onmessage = function(ev) {
-  var j = JSON.parse(ev.data);
-  if (j) {
-    console.log(j);
-    if(j.type == "transport.connected") {
-      nodeConnected(j.ident);
-    } else if (j.type == "transport.disconnected") {
-      nodeDisconnected(j.ident);
-    } else if (j.type == "transport.sendmsg") {
-      nodeSend(j.ident, j.number);
-    } else if (j.type == "transport.recvmsg") {
-      nodeRecv(j.ident, j.number);
-    } else if (j.type == "tunnel.build") {
-      tunnelBuild(j.value, j.tid, j.inbound);
-    } else if (j.type == "tunnel.latency") {
-      tunnelLatency(j.tid, j.value);
-    } else if (j.type == "tunnel.state") {
-      tunnelState(j.tid, j.value);
-    } else if (j.type == "tunnels.created") {
-      tunnelCreated(j.tid);
-    } else if (j.type == "tunnels.expired") {
-      tunnelExpiring(j.tid);
-    } else {
-      logit("message: "+j.type);
-    }
+
+function startui() {
+  var el = document.getElementById("ws-url");
+  var url;
+  if(el)
+    url = el.value;
+  else
+    url = "ws://127.0.0.1:7666";
+  
+  var ws = new WebSocket(url);
+  ws.onclose = function (ev) {
+    logit("failed to connect to "+url);
+    nodes = { length: 0 };
+    tpeers = { length: 0 };
+    socketClosed();
   }
-};
+  ws.onopen = function(ev) {
+    logit("connected to "+url);
+  }
+  ws.onmessage = function(ev) {
+    var j = JSON.parse(ev.data);
+    if (j) {
+      console.log(j);
+      if(j.type == "transport.connected") {
+        nodeConnected(j.ident);
+      } else if (j.type == "transport.disconnected") {
+        nodeDisconnected(j.ident);
+      } else if (j.type == "transport.sendmsg") {
+        nodeSend(j.ident, j.number);
+      } else if (j.type == "transport.recvmsg") {
+        nodeRecv(j.ident, j.number);
+      } else if (j.type == "tunnel.build") {
+        tunnelBuild(j.value, j.tid, j.inbound);
+      } else if (j.type == "tunnel.latency") {
+        tunnelLatency(j.tid, j.value);
+      } else if (j.type == "tunnel.state") {
+        tunnelState(j.tid, j.value);
+      } else if (j.type == "tunnels.created") {
+        tunnelCreated(j.tid);
+      } else if (j.type == "tunnels.expired") {
+        tunnelExpiring(j.tid);
+      } else {
+        logit("message: "+j.type);
+      }
+    }
+  };
+  var b = document.getElementById("connect-button");
+  b.onclick = function() {
+    ws.close();
+  }
+  b.value = "disconnect";
+}
 
 function getPeer(h, us) {
   if (tpeers[h]) {
