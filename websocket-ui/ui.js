@@ -137,7 +137,7 @@ function logit(msg) {
 function socketClosed() {
   var b = document.getElementById("connect-button");
   b.onclick = startui
-  b.value = "connect";
+  b.innerHTML = "connect";
 }
 
 function startui() {
@@ -150,13 +150,21 @@ function startui() {
   
   var ws = new WebSocket(url);
   ws.onclose = function (ev) {
-    logit("failed to connect to "+url);
+    if (ev.code == 1000)
+      logit("connection closed");
+    else
+      logit("failed to connect to "+url);
     nodes = { length: 0 };
     tpeers = { length: 0 };
     socketClosed();
   }
   ws.onopen = function(ev) {
     logit("connected to "+url);
+    var b = document.getElementById("connect-button");
+    b.onclick = function() {
+      ws.close();
+    }
+    b.innerHTML = "disconnect";
   }
   ws.onmessage = function(ev) {
     var j = JSON.parse(ev.data);
@@ -185,11 +193,6 @@ function startui() {
       }
     }
   };
-  var b = document.getElementById("connect-button");
-  b.onclick = function() {
-    ws.close();
-  }
-  b.value = "disconnect";
 }
 
 function getPeer(h, us) {
