@@ -117,13 +117,11 @@ function tunnelState(tid, state) {
     tunnelFailed(tid);
   } else if (state == "6" ) {
     tunnelExpiring(tid);
-  } else {
-    logit("tunnel "+tid+" state "+state);
   }
 }
 
 function tunnelCreated(tid) {
-  logit("tunnel "+tid+" was created");
+  logit("Tunnel "+tid+" was created");
 }
 
 function logit(msg) {
