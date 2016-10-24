@@ -43,7 +43,7 @@ clean-obj:
 	rm -f $(OBJECTS)
 
 clean-bin:
-	rm -f keyinfo keygen
+	rm -f keyinfo keygen famtool
 
 clean: clean-i2pd clean-obj clean-bin
 
