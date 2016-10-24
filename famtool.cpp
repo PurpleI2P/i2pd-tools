@@ -31,7 +31,7 @@ static void printhelp(const std::string & name)
   std::cout << "sign a router info with family signing key" << std::endl;
   std::cout << name << " -s -n i2pfam -k myfam.pem -i router.keys -f router.info" << std::endl << std::endl;
   std::cout << "verify signed router.info" << std::endl;
-  std::cout << name << " -V -c myfam.pem -f router.info" << std::endl << std::endl;
+  std::cout << name << " -V -n i2pfam -c myfam.pem -f router.info" << std::endl << std::endl;
 }
 
 
@@ -216,7 +216,6 @@ int main(int argc, char * argv[])
   }
   // generate family key code
   if(gen) {
-    std::cout << "generate key for router family " << fam << "..." << std::endl;
     if(!privkey.size()) privkey = fam + ".pem";
     if(!certfile.size()) certfile = fam + ".crt";
     
@@ -285,8 +284,8 @@ int main(int argc, char * argv[])
     fclose(certf);
     
     EVP_PKEY_free(ev_k);
-    EC_KEY_free(k_priv);
     X509_free(x);
+    std::cout << "family " << fam << "made" << std::endl;
   }
 
   if (sign) {
@@ -335,7 +334,6 @@ int main(int argc, char * argv[])
     }
     
     RouterInfo ri(infofile);
-    ri.CreateBuffer(keys);
     auto ident = ri.GetIdentHash();
 
     
@@ -345,12 +343,14 @@ int main(int argc, char * argv[])
       ri.SetProperty(ROUTER_INFO_PROPERTY_FAMILY, fam);
       ri.SetProperty(ROUTER_INFO_PROPERTY_FAMILY_SIG, sig);
       if (verbose) std::cout << "signed " << sig << std::endl;
+      ri.CreateBuffer(keys);    
       if(!ri.SaveToFile(infofile)) {
         std::cout << "failed to save to " << infofile << std::endl;
       }
     } else {
       std::cout << "failed to sign router info" << std::endl;
     }
+    std::cout << "signed" << std::endl;
   }
 
   if(verify) {
@@ -398,6 +398,7 @@ int main(int argc, char * argv[])
       std::cout << "invalid signature" << std::endl;
       return 1;
     }
+    std::cout << "verified" << std::endl;
   }
   return 0;
 }
