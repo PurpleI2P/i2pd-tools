@@ -34,7 +34,6 @@ static void printhelp(const std::string & name)
   std::cout << name << " -V -n i2pfam -c myfam.pem -f router.info" << std::endl << std::endl;
 }
 
-
 static std::shared_ptr<Verifier> LoadCertificate (const std::string& filename)
 {
   std::shared_ptr<Verifier> verifier;
@@ -205,9 +204,8 @@ int main(int argc, char * argv[])
     printhelp(argv[0]);
     return 0;
   }
+  
   InitCrypto(false);
-
-
   
   if(!fam.size()) {
     // no family name
@@ -216,7 +214,7 @@ int main(int argc, char * argv[])
   }
   // generate family key code
   if(gen) {
-    if(!privkey.size()) privkey = fam + ".pem";
+    if(!privkey.size()) privkey = fam + ".key";
     if(!certfile.size()) certfile = fam + ".crt";
     
     std::string cn = fam + ".family.i2p.net";
@@ -251,10 +249,6 @@ int main(int argc, char * argv[])
     assert(ev_k);
     assert(EVP_PKEY_assign_EC_KEY(ev_k, k_priv) == 1);
     
-    
-    // TODO: password protection
-    PEM_write_ECPrivateKey(privf, k_priv, nullptr, nullptr, 0, nullptr, nullptr);
-    
     X509 * x = X509_new();
     assert(x);
     
@@ -285,7 +279,7 @@ int main(int argc, char * argv[])
     
     EVP_PKEY_free(ev_k);
     X509_free(x);
-    std::cout << "family " << fam << "made" << std::endl;
+    std::cout << "family " << fam << " made" << std::endl;
   }
 
   if (sign) {
