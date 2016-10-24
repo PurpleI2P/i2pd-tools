@@ -11,13 +11,16 @@ OBJECTS = $(SOURCES:.cpp=.o)
 I2PD_LIB = libi2pd.a
 
 
-all: keygen keyinfo
+all: keygen keyinfo famtool
 
 keygen: $(OBJECTS)
 	$(CXX) -o keygen keygen.o $(LDFLAGS) $(LIBS)
 
 keyinfo: $(OBJECTS)
 	$(CXX) -o keyinfo keyinfo.o $(LDFLAGS) $(LIBS)
+
+famtool: $(OBJECTS)
+	$(CXX) -o famtool famtool.o $(LDFLAGS) $(LIBS)
 
 $(OBJECTS): libi2pd.a
 

@@ -8,6 +8,11 @@
 # built binaries
 keygen
 keyinfo
+famtool
 
 # private key files
 *.dat
+*.pem
+
+# certificates
+*.crt
