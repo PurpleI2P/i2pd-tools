@@ -19,7 +19,7 @@ using namespace i2p::data;
 
 static void usage(const std::string & name)
 {
-  std::cout << "usage: " << name << " [-h] [-v] [-g -n family -c family.crt -k family.pem] [-s -n family -k family.pem -i router.info] [-V -c family.crt -i router.info]" << std::endl;
+  std::cout << "usage: " << name << " [-h] [-v] [-g -n family -c family.crt -k family.pem] [-s -n family -k family.pem -i router.keys -f router.info] [-V -c family.crt -f router.info]" << std::endl;
 }
 
 static void printhelp(const std::string & name)
@@ -29,9 +29,9 @@ static void printhelp(const std::string & name)
   std::cout << "generate a new family signing key for family called ``i2pfam''" << std::endl;
   std::cout << name << " -g -n i2pfam -c myfam.crt -k myfam.pem" << std::endl << std::endl;
   std::cout << "sign a router info with family signing key" << std::endl;
-  std::cout << name << " -s -n i2pfam -k myfam.pem -i router.info" << std::endl << std::endl;
+  std::cout << name << " -s -n i2pfam -k myfam.pem -i router.keys -f router.info" << std::endl << std::endl;
   std::cout << "verify signed router.info" << std::endl;
-  std::cout << name << " -V -c myfam.pem -i router.info" << std::endl << std::endl;
+  std::cout << name << " -V -c myfam.pem -f router.info" << std::endl << std::endl;
 }
 
 
@@ -155,8 +155,10 @@ int main(int argc, char * argv[])
   std::string fam;
   std::string privkey;
   std::string certfile;
-  std::string infoFile;
-  while((opt = getopt(argc, argv, "vVhgsn:i:c:k:")) != -1) {
+  std::string infile;
+  std::string infofile;
+  std::string outfile;
+  while((opt = getopt(argc, argv, "vVhgsn:i:c:k:o:f:")) != -1) {
     switch(opt) {
     case 'v':
       verbose = true;
@@ -174,9 +176,14 @@ int main(int argc, char * argv[])
         return 1;
       }
       break;
-    case 'i':
-      infoFile = std::string(argv[optind-1]);
+    case 'f':
+      infofile = std::string(argv[optind-1]);
       break;
+    case 'i':
+      infile = std::string(argv[optind-1]);
+      break;
+    case 'o':
+      outfile = std::string(argv[optind-1]);
     case 'c':
       certfile = std::string(argv[optind-1]);
       break;
@@ -284,9 +291,9 @@ int main(int argc, char * argv[])
 
   if (sign) {
     // sign
-    if (!infoFile.size()) {
+    if (!infile.size()) {
       // no router info specififed
-      std::cerr << "no routerinfo file specified" << std::endl;
+      std::cerr << "no router keys file specified" << std::endl;
       return 1;
     }
     if (!privkey.size()) {
@@ -297,17 +304,38 @@ int main(int argc, char * argv[])
     
     {
       std::ifstream i;
-      i.open(infoFile);
+      i.open(infofile);
       if(!i.is_open()) {
-        std::cout << "cannot open " << infoFile << std::endl;
+        std::cout << "cannot open " << infofile << std::endl;
         return 1;
       }
     }
 
-    if (verbose) std::cout << "load " << infoFile << std::endl;
+    if (verbose) std::cout << "load " << infofile << std::endl;
+
     
     
-    RouterInfo ri(infoFile);
+    PrivateKeys keys;
+    {
+      std::ifstream fi(infile, std::ifstream::in | std::ifstream::binary);
+      if(!fi.is_open()) {
+        std::cout << "cannot open " << infile << std::endl;
+        return 1;
+      }
+      fi.seekg (0, std::ios::end);
+      size_t len = fi.tellg();
+      fi.seekg (0, std::ios::beg);		
+      uint8_t * k = new uint8_t[len];
+      fi.read((char*)k, len);
+      if(!keys.FromBuffer(k, len)) {
+        std::cout << "invalid key file " << infile << std::endl;
+        return 1;
+      }
+      delete [] k;
+    }
+    
+    RouterInfo ri(infofile);
+    ri.CreateBuffer(keys);
     auto ident = ri.GetIdentHash();
 
     
@@ -317,15 +345,16 @@ int main(int argc, char * argv[])
       ri.SetProperty(ROUTER_INFO_PROPERTY_FAMILY, fam);
       ri.SetProperty(ROUTER_INFO_PROPERTY_FAMILY_SIG, sig);
       if (verbose) std::cout << "signed " << sig << std::endl;
-      std::ofstream f(infoFile);
-      ri.WriteToStream(f);
+      if(!ri.SaveToFile(infofile)) {
+        std::cout << "failed to save to " << infofile << std::endl;
+      }
     } else {
       std::cout << "failed to sign router info" << std::endl;
     }
   }
 
   if(verify) {
-    if(!infoFile.size()) {
+    if(!infofile.size()) {
       std::cout << "no router info file specified" << std::endl;
       return 1;
     }
@@ -341,19 +370,19 @@ int main(int argc, char * argv[])
 
     {
       std::ifstream i;
-      i.open(infoFile);
+      i.open(infofile);
       if(!i.is_open()) {
-        std::cout << "cannot open " << infoFile << std::endl;
+        std::cout << "cannot open " << infofile << std::endl;
         return 1;
       }
     }
 
-    if (verbose) std::cout << "load " << infoFile << std::endl;
+    if (verbose) std::cout << "load " << infofile << std::endl;
     
-    RouterInfo ri(infoFile);
+    RouterInfo ri(infofile);
     auto sig = ri.GetProperty(ROUTER_INFO_PROPERTY_FAMILY_SIG);
     if (ri.GetProperty(ROUTER_INFO_PROPERTY_FAMILY) != fam) {
-      std::cout << infoFile << " does not belong to " << fam << std::endl;
+      std::cout << infofile << " does not belong to " << fam << std::endl;
       return 1;
     }
     auto ident = ri.GetIdentHash();
