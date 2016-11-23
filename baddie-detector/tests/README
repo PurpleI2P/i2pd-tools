@@ -1,0 +1,10 @@
+This requires pytest to be installed.
+It's not a dependency in setup.py because end users should not have to worry about testing.
+
+Here is how to install it:
+
+	http://pytest.org/latest/getting-started.html#installation
+
+And to run it:
+
+	py.test

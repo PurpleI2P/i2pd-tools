@@ -1,0 +1,10 @@
+*~
+*.pyc
+*\#*
+
+v/
+
+*.egg-info/
+
+build/
+dist/
