@@ -21,6 +21,6 @@ class BaddieProcessor:
         self._baddies[addr] += reason + ' '
 
     def write_blocklist(self, f):
-        f.write('# baddies blocklist generated on {}'.format(datetime.datetime.now()))
+        f.write('# baddies blocklist generated on {}\n'.format(datetime.datetime.now()))
         for k in self._baddies:
             f.write('{}:{}\n'.format(self._baddies[k], k))
