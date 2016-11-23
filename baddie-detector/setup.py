@@ -2,8 +2,8 @@
 from setuptools import setup
 
 setup(name = 'baddiedetector',
-    version = '0.0',
-    description = 'i2p netdb blocklist ',
+    version = '0.1',
+    description = 'i2p netdb blocklist tool',
     author = 'Jeff Becker',
     author_email = 'ampernand@gmail.com',
     install_requires = ['python-geoip','python-geoip-geolite2'],

@@ -5,9 +5,11 @@
 ## MIT Liecense 2014
 ##
 import os,sys,struct,time,hashlib,fnmatch,io
-from geoip import geolite2
 import base64
 import logging
+import pygeoip
+
+geo = pygeoip.GeoIP('/usr/share/GeoIP/GeoIPCity.dat')
 
 b64encode = lambda x : base64.b64encode(x, b'~-').decode('ascii')
 
@@ -153,6 +155,10 @@ class Entry:
             return li
 
     @staticmethod
+    def geolookup(entry):
+        return geo.record_by_addr(entry)
+        
+    @staticmethod
     def _read_addr(fd):
         """
         load next router address
@@ -168,7 +174,7 @@ class Entry:
             # This is a try because sometimes hostnames show up.
             # TODO: Make it allow host names.
             try:
-                addr.location = geolite2.lookup(addr.options.get('host', None))
+                addr.location = geolookup(addr.options.get('host', None))
             except:
                 addr.location = None
 
@@ -179,7 +185,7 @@ class Entry:
                 # If there are introducers then it's probably firewalled.
                 addr.firewalled = True
                 try:
-                    addr.location = geolite2.lookup(addr.options.get('ihost0', None))
+                    addr.location = geolookup(addr.options.get('ihost0', None))
                 except:
                     addr.location = None
 

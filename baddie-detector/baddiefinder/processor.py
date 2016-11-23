@@ -1,0 +1,26 @@
+from . import util
+
+import datetime
+
+class BaddieProcessor:
+
+    def __init__(self, filters):
+        self._filters = filters
+        self._baddies = dict()
+
+        
+    def hook(self, entry):
+        for f in self._filters:
+            if f.process(entry) is True:
+                self.add_baddie(entry, 'detected by {}'.format(f.name))
+
+    def add_baddie(self, entry, reason):
+        addr = util.getaddress(entry)
+        if addr not in self._baddies:
+            self._baddies[addr] = ''
+        self._baddies[addr] += reason + ' '
+
+    def write_blocklist(self, f):
+        f.write('# baddies blocklist generated on {}'.format(datetime.datetime.now()))
+        for k in self._baddies:
+            f.write('{}:{}\n'.format(self._baddies[k], k))
