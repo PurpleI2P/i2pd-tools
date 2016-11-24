@@ -22,8 +22,8 @@ def main():
     p = processor.BaddieProcessor([f])
     netdb.inspect(p.hook)
     with open(s.get("output", "file", fallback="baddies.txt"), 'w') as f:
-        p.write_blocklist(f)
-
+        print ('wrote {} blocklist entries'.format(p.write_blocklist(f)))
+        
 
 if __name__ == "__main__":
     main()
