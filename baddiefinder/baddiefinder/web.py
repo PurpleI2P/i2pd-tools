@@ -19,9 +19,13 @@ def baddies():
         netdb.inspect(p.hook, path)
     else:
         netdb.inspect(p.hook)
-    body = io.BytesIO()
+    body = io.StringIO()
     p.write_blocklist(body)
-    return body
+    v = body.getvalue()
+    body.close()
+    r = flask.Response(v)
+    r.headers["Content-Type"] = 'text/plain'
+    return r
 
 @app.route("/")
 def index():
