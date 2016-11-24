@@ -12,8 +12,9 @@ class BaddieProcessor:
     def hook(self, entry):
         now = datetime.datetime.now()
         for f in self._filters:
-            if f.process(entry) is True:
-                self.add_baddie(entry, 'detected by {} on {}'.format(f.name, now.strftime("%c").replace(":",'-')))
+            reason = f.process(entry)
+            if reason is not None:
+                self.add_baddie(entry, 'detected by {} on {} ({})'.format(f.name, now.strftime("%c").replace(":",'-'), reason))
 
     def add_baddie(self, entry, reason):
         addr = util.getaddress(entry).decode('ascii')
