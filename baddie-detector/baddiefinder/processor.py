@@ -10,15 +10,14 @@ class BaddieProcessor:
 
         
     def hook(self, entry):
+        now = datetime.datetime.now()
         for f in self._filters:
             if f.process(entry) is True:
-                self.add_baddie(entry, 'detected by {}'.format(f.name))
+                self.add_baddie(entry, 'detected by {} on {}'.format(f.name, now.strftime("%c").replace(":",'-')))
 
     def add_baddie(self, entry, reason):
-        addr = util.getaddress(entry)
-        if addr not in self._baddies:
-            self._baddies[addr] = ''
-        self._baddies[addr] += reason + ' '
+        addr = util.getaddress(entry).decode('ascii')
+        self._baddies[addr] = reason 
 
     def write_blocklist(self, f):
         f.write('# baddies blocklist generated on {}\n'.format(datetime.datetime.now()))

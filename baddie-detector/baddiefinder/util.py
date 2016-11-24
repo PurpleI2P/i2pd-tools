@@ -5,7 +5,9 @@ def getaddress(info):
     for addr in info.addrs:
         opts = addr.options
         if b'host' in opts:
-            return opts[b'host']
+            h = opts[b'host']
+            if b':' not in h:
+                return h
 
 def getcaps(info):
     """
