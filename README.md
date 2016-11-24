@@ -33,6 +33,15 @@ sudo apt-get install \
 
 ## Tools included
 
+### baddiefinder
+
+i2p netdb blocklist generator tool
+
+#### Usage
+
+see [here](baddiefinder)
+
+
 ### keygen
 
 Generate an i2p private key
