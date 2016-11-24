@@ -27,3 +27,7 @@ def baddies():
 def index():
     return """this server serves a router info blocklist of ip addresses with unreasonably high desnity of i2p routers (right now just floodfills)
 """
+
+
+if __name__ == '__main__':
+    app.run()
