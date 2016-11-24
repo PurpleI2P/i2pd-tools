@@ -1,2 +1,1 @@
-python-geoip
-python-geoip-geolite2
+flask

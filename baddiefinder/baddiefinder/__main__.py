@@ -17,7 +17,7 @@ def main():
 
     args = ap.parse_args()
     s = settings.load(args.settings)
-    fmax = s.get("thresholds", "max_floodfills_per_ip", fallback=5)
+    fmax = s.get("thresholds", "max_floodfills_per_ip", fallback=3)
     f = filter.FloodfillFilter(fmax)
     p = processor.BaddieProcessor([f])
     netdb.inspect(p.hook)
