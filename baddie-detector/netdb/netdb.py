@@ -7,9 +7,12 @@
 import os,sys,struct,time,hashlib,fnmatch,io
 import base64
 import logging
-import pygeoip
 
-geo = pygeoip.GeoIP('/usr/share/GeoIP/GeoIPCity.dat')
+try:
+    import pygeoip
+    geo = pygeoip.GeoIP('/usr/share/GeoIP/GeoIPCity.dat')
+except:
+    geo = None
 
 b64encode = lambda x : base64.b64encode(x, b'~-').decode('ascii')
 
@@ -156,7 +159,8 @@ class Entry:
 
     @staticmethod
     def geolookup(entry):
-        return geo.record_by_addr(entry)
+        if geo:
+            return geo.record_by_addr(entry)
         
     @staticmethod
     def _read_addr(fd):
