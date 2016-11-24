@@ -1,0 +1,2 @@
+import netdb
+netdb.inspect()
