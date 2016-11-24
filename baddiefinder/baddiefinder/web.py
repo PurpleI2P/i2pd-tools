@@ -14,7 +14,7 @@ def baddies():
     fmax = s.get("thresholds", "max_floodfills_per_ip", fallback=3)
     f = filter.FloodfillFilter(fmax)
     p = processor.BaddieProcessor([f])
-    path = s.get("netdb", "directory", fallback=None)
+    path = s.get("netdb", "dir", fallback=None)
     if path:
         netdb.inspect(p.hook, path)
     else:
