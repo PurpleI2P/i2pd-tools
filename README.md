@@ -42,6 +42,21 @@ i2p netdb blocklist generator tool
 see [here](baddiefinder)
 
 
+### routerinfo
+
+print information about a router info file
+
+#### usage
+
+
+print ip and port for router info excluding ipv6
+
+    ./routerinfo -p ~/.i2pd/netDb/r6/routerInfo-blah.dat
+
+print iptables firewall rules to allow 1 nodes in netdb through firewall including ipv6 addresses
+
+    ./routerinfo -6 -f ~/.i2pd/netDb/r6/routerInfo-blah.dat
+
 ### keygen
 
 Generate an i2p private key
