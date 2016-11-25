@@ -11,7 +11,10 @@ OBJECTS = $(SOURCES:.cpp=.o)
 I2PD_LIB = libi2pd.a
 
 
-all: keygen keyinfo famtool
+all: keygen keyinfo famtool routerinfo
+
+routerinfo: $(OBJECTS)
+	$(CXX) -o routerinfo routerinfo.o $(LDFLAGS) $(LIBS)
 
 keygen: $(OBJECTS)
 	$(CXX) -o keygen keygen.o $(LDFLAGS) $(LIBS)
