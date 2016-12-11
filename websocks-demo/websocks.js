@@ -169,7 +169,7 @@ function ws_try_connect()
 
     ws.onopen = function(ev) {
         console.log("connect to "+irc_url);
-        irc_ui_println("trying to connect to "+url_url);
+        irc_ui_println("resolving "+irc_url+" ...");
         ws.send(irc_url);
     }
     ws.onmessage = function(ev) {
