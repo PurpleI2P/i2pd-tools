@@ -1,0 +1,6 @@
+
+.text-window {
+    width: 90%;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
