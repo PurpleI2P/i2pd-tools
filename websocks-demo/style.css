@@ -1,0 +1,23 @@
+
+.text-window {
+    position: fixed;
+    height: 90%;
+    width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    overflow-y: scroll;
+}
+
+.text-input {
+    width: 100%;
+    position: fixed;
+    bottom: 0px;
+    left: 10px;
+}
+
+#irc-window {
+    position: fixed;
+    width: 95%;
+    top: 20px;
+    left: 10px;
+}
