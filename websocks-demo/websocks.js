@@ -9,10 +9,8 @@ function ws_try_connect()
     elem.id ="irc-window";
     document.body.appendChild(elem);
 
-    var text_e = document.createElement("pre");
-    text_e.setAttribute("class", "text-window");
-    elem.appendChild(text_e);
     var input = document.createElement("input");
+    input.setAttribute("class", "text-input");
     elem.appendChild(input);
 
 
@@ -21,25 +19,85 @@ function ws_try_connect()
         line_in: "",
         target: "",
         nick: "ebin",
+        panes: {},
     };
 
-    function irc_ui_println(line)
+    function irc_ui_show_pane(pane)
+    {
+        irc_ui_ensure_pane(pane);
+        // hide all other panes
+        for (var k in irc.panes) {
+            if(k == pane) {
+                irc.panes[k].elem.style = "display: inline-block";
+                irc.target = k;
+            } else {
+                irc.panes[k].elem.style = "display: none";
+            }
+        }
+    }
+
+    function irc_ui_ensure_pane(pane)
+    {
+        if(irc.panes[pane]) return;
+        var e = document.createElement("pre");
+        e.setAttribute("class", "text-window");
+        e.style = "display: none";
+        e.setAttribute("panename", pane);
+        irc.panes[pane] = {
+            elem: e,
+            name: pane,
+        };
+        var root = document.getElementById("irc-window");
+        root.appendChild(e);
+    }
+
+    function irc_ui_println(line, pane)
     {
         if(line == "") return;
         var node = document.createTextNode(line);
         var e = document.createElement("div");
         e.appendChild(node);
-        text_e.appendChild(e);
-        while(text_e.children.length > 20) {
-            text_e.children[0].remove();
+        if(!pane) {
+            pane = " ";
         }
+        irc_ui_ensure_pane(pane);
+        var p = irc.panes[pane];
+        if(p) {
+            p.elem.appendChild(e);
+            if (pane == irc.target) {
+                window.scroll(0, p.elem.offsetTop + p.elem.offsetHeight);
+            }
+        } else {
+            console.log("No pane called "+pane);
+        }
+    
     }
 
-    function irc_on_privmsg(src, msg)
+    function irc_on_privmsg(src, target, msg)
     {
         var parts = src.split("!");
         src = parts[0].slice(1);
-        irc_ui_println("<"+src+ "> "+msg);
+        irc_ui_println("<"+src+ "> "+msg, target);
+    }
+
+    function irc_on_greeted(conn)
+    {
+        irc_ui_println("successfully joined irc");
+    }
+
+    function irc_on_join(src, target)
+    {
+        irc_ui_println("--> "+src, target);
+    }
+
+    function irc_on_part(src, target)
+    {
+        irc_ui_println("<-- "+src, target);
+    }
+
+    function irc_on_other(src, cmd, target, msg)
+    {
+        irc_ui_println("<"+src+"> "+msg, src);
     }
 
     function irc_process_in(conn)
@@ -56,16 +114,30 @@ function ws_try_connect()
             var src = parts[0];
             var cmd = parts[1];
             var target = parts[2];
+            var idx = line.indexOf(target);
+            var msg = line.slice(idx+target.length+2);
             if (cmd == "PRIVMSG") {
-                var idx = line.indexOf(target);
-                var msg = line.slice(idx+target.length+2);
-                irc_on_privmsg(src, msg);
+                irc_on_privmsg(src, target, msg);
                 return;
             }
+            if (cmd == "JOIN" ) {
+                irc_on_join(src, target);
+                return;
+            }
+            if (cmd == "PART") {
+                irc_on_part(src, target);
+                return;
+            }
+           
             if(cmd == "PONG") return;
+            if(cmd == "376") {
+                // we have been greeted fully
+                irc_on_greeted(conn);
+                return;
+            }
+            irc_on_other(src.slice(1), cmd, target, msg);
         }
         irc_ui_println(line);
-
     }
 
     function irc_data(conn, data)
@@ -86,13 +158,14 @@ function ws_try_connect()
 
     function irc_privmsg(conn, target, msg)
     {
-        irc_ui_println("<"+irc.nick+"> "+msg);
+        irc_ui_println("<"+irc.nick+"> "+msg, target);
         irc_sendline(conn, "PRIVMSG "+target+" :"+msg);
     }
 
     function irc_join_channel(conn, chnl)
     {
         irc_sendline(conn, "JOIN "+chnl);
+        irc_ui_ensure_pane(chnl);
     }
 
     function handle_input_command(conn, arg, params)
@@ -102,21 +175,44 @@ function ws_try_connect()
             for (var idx = 0 ; idx < params.length; idx ++) {
                 irc_join_channel(conn, params[idx]);
             }
+            return;
+        }
+
+        if(arg == "lp" || arg == "listpanes") {
+            irc_ui_println("--- begin list of panes", irc.target);
+            for (var k in irc.panes) {
+                if(k == irc.target) {
+                    irc_ui_println("(active) : "+k, irc.target);
+                } else {
+                    irc_ui_println("         : "+k, irc.target);
+                }
+            }
+            irc_ui_println("--- end list of panes", irc.target);
+            return;
+        }
+
+
+        if(arg == "m" || arg == "msg") {
+            irc_privmsg(conn, params[0], params.slice(1).join(" "));
+            return;
         }
 
         if(arg == "n" || arg == "nick") {
             irc_sendline(conn, "NICK "+params[0]);
+            irc.nick = params[0];
             return;
         }
-
+        if(arg == "r" || arg == "raw") {
+            irc_sendline(conn, params.join(" "));
+            return;
+        }
         if(arg == "q" || arg == "quit") {
             irc_sendline(conn, "QUIT");
-            clearInterval(irc.pinger);
-            irc.connected = 0;
             return;
         }
-        if(arg == "t" || arg == "target") {
+        if(arg == "w" || arg == "window") {
             irc.target = params[0];
+            irc_ui_show_pane(irc.target);
             return;
         }
     }
@@ -134,6 +230,7 @@ function ws_try_connect()
     function irc_connected(conn, url)
     {
         console.log("connected to irc");
+        irc_ui_show_pane(" ");
         irc_ui_println("connecting to "+url+"...");
         // send user command
         irc_sendline(conn, "NICK "+irc.nick);
