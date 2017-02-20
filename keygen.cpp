@@ -18,6 +18,8 @@ int main (int argc, char * argv[])
 		std::string str(argv[2]);
 		type = NameToSigType(str);
 	}
+	if (type == i2p::data::SIGNING_KEY_TYPE_GOSTR3410_A_GOSTR3411)
+		i2p::crypto::InitGost ();
 	auto keys = i2p::data::PrivateKeys::CreateRandomKeys (type);
 	std::ofstream f (argv[1], std::ofstream::binary | std::ofstream::out);
 	if (f)
@@ -31,6 +33,10 @@ int main (int argc, char * argv[])
 	}
 	else
 		std::cout << "Can't create file " << argv[1] << std::endl;	
+
+	if (type == i2p::data::SIGNING_KEY_TYPE_GOSTR3410_A_GOSTR3411)
+		i2p::crypto::TerminateGost ();
+	i2p::crypto::TerminateCrypto ();
 
 	return 0;
 }

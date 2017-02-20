@@ -27,6 +27,8 @@ std::string SigTypeToName(uint16_t keytype)
     return "RSA-4096-SHA512";
   case i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519:
     return "ED25519-SHA512";
+  case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_A_GOSTR3411:
+    return "GOSTR3410-A-GOSTR3411";
   default:
     std::stringstream ss;
     ss << "unknown: " << keytype;
@@ -62,7 +64,9 @@ uint16_t NameToSigType(const std::string & keyname)
   if(name.find("RSA-SHA512") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096;
 
   if(name.find("ED25519") != npos) return i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
-  
+
+  if(name.find("GOSTR3410") != npos) return i2p::data::SIGNING_KEY_TYPE_GOSTR3410_A_GOSTR3411; 
+
   return -1;
 }
 
