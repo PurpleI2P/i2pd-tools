@@ -11,7 +11,7 @@ OBJECTS = $(SOURCES:.cpp=.o)
 I2PD_LIB = libi2pd.a
 
 
-all: keygen keyinfo famtool routerinfo
+all: keygen keyinfo famtool routerinfo regaddr
 
 routerinfo: $(OBJECTS)
 	$(CXX) -o routerinfo routerinfo.o $(LDFLAGS) $(LIBS)
@@ -24,6 +24,9 @@ keyinfo: $(OBJECTS)
 
 famtool: $(OBJECTS)
 	$(CXX) -o famtool famtool.o $(LDFLAGS) $(LIBS)
+
+regaddr: $(OBJECTS)
+	$(CXX) -o regaddr regaddr.o $(LDFLAGS) $(LIBS)
 
 $(OBJECTS): libi2pd.a
 
@@ -46,7 +49,7 @@ clean-obj:
 	rm -f $(OBJECTS)
 
 clean-bin:
-	rm -f keyinfo keygen famtool
+	rm -f keyinfo keygen famtool regaddr
 
 clean: clean-i2pd clean-obj clean-bin
 
