@@ -1,10 +1,12 @@
 I2PD_PATH = i2pd
+LIBI2PD_PATH = $(I2PD_PATH)/libi2pd
+LIBI2PD_CLIENT_PATH = $(I2PD_PATH)/libi2pd_client
 CXX = g++
 FLAGS = -g -Wall -std=c++11
-INCFLAGS = -I$(I2PD_PATH)
+INCFLAGS = -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH) -I$(I2PD_PATH)
 CXXFLAGS = $(FLAGS) $(INCFLAGS)
-LDFLAGS = -Wl,-rpath,/usr/local/lib 
-LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system -lboost_date_time -lboost_filesystem -lboost_program_options -lssl -lcrypto -lpthread -lrt -lz 
+LDFLAGS = -Wl,-rpath,/usr/local/lib
+LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system -lboost_date_time -lboost_filesystem -lboost_program_options -lssl -lcrypto -lpthread -lrt -lz
 
 SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
@@ -49,7 +51,7 @@ clean-obj:
 	rm -f $(OBJECTS)
 
 clean-bin:
-	rm -f keyinfo keygen famtool regaddr
+	rm -f keyinfo keygen famtool regaddr routerinfo
 
 clean: clean-i2pd clean-obj clean-bin
 
