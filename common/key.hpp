@@ -27,8 +27,8 @@ std::string SigTypeToName(uint16_t keytype)
     return "RSA-4096-SHA512";
   case i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519:
     return "ED25519-SHA512";
-  case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_A_GOSTR3411:
-    return "GOSTR3410-A-GOSTR3411";
+  case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256:
+    return "GOSTR3410-A-GOSTR3411-SHA256";
   default:
     std::stringstream ss;
     ss << "unknown: " << keytype;
@@ -47,7 +47,7 @@ static void ToUpper(std::string & str)
 uint16_t NameToSigType(const std::string & keyname)
 {
   if(keyname.size() == 1) return atoi(keyname.c_str());
-  
+
   std::string name = keyname;
   ToUpper(name);
   auto npos = std::string::npos;
@@ -56,16 +56,16 @@ uint16_t NameToSigType(const std::string & keyname)
   if(name.find("P256") != npos) return i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA256_P256;
 
   if(name.find("P384") != npos) return i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA384_P384;
-  
+
   if(name.find("RSA-SHA265") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA256_2048;
-  
+
   if(name.find("RSA-SHA384") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072;
-  
+
   if(name.find("RSA-SHA512") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096;
 
   if(name.find("ED25519") != npos) return i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
 
-  if(name.find("GOSTR3410") != npos) return i2p::data::SIGNING_KEY_TYPE_GOSTR3410_A_GOSTR3411; 
+  if(name.find("GOSTR3410-SHA256") != npos) return i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256;
 
   return -1;
 }
