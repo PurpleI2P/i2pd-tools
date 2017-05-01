@@ -28,7 +28,9 @@ std::string SigTypeToName(uint16_t keytype)
   case i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519:
     return "ED25519-SHA512";
   case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256:
-    return "GOSTR3410-A-GOSTR3411-SHA256";
+    return "GOSTR3410-A-GOSTR3411-256";
+  case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_TC26_A_512_GOSTR3411_512:
+    return "GOSTR3410-TC26-A-GOSTR3411-512";	
   default:
     std::stringstream ss;
     ss << "unknown: " << keytype;
@@ -65,7 +67,9 @@ uint16_t NameToSigType(const std::string & keyname)
 
   if(name.find("ED25519") != npos) return i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
 
-  if(name.find("GOSTR3410-SHA256") != npos) return i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256;
+  if(name.find("GOSTR3410-A-GOSTR3411-256") != npos) return i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256;
+
+  if(name.find("GOSTR3410-TC26-A-GOSTR3411-512") != npos) return i2p::data::SIGNING_KEY_TYPE_GOSTR3410_TC26_A_512_GOSTR3411_512;
 
   return -1;
 }
