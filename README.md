@@ -4,7 +4,7 @@ This repository contains tools that supplement i2pd.
 
 Notice: git submodules are used so make sure to clone this repository recursively
 
-    git clone --recursive https://github.com/purplei2pd/i2pd-tools
+    git clone --recursive https://github.com/purplei2p/i2pd-tools
 
 ## Building
 
