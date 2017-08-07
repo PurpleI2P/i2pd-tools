@@ -1,2 +1,0 @@
-import netdb
-netdb.inspect()
