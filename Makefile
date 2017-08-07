@@ -13,7 +13,7 @@ OBJECTS = $(SOURCES:.cpp=.o)
 I2PD_LIB = libi2pd.a
 
 
-all: keygen keyinfo famtool routerinfo regaddr
+all: keygen keyinfo famtool routerinfo regaddr vain
 
 routerinfo: $(OBJECTS)
 	$(CXX) -o routerinfo routerinfo.o $(LDFLAGS) $(LIBS)
@@ -29,6 +29,9 @@ famtool: $(OBJECTS)
 
 regaddr: $(OBJECTS)
 	$(CXX) -o regaddr regaddr.o $(LDFLAGS) $(LIBS)
+
+vain: $(OBJECTS)
+	$(CXX) -o vain vanitygen.o $(LDFLAGS) $(LIBS)
 
 $(OBJECTS): libi2pd.a
 
