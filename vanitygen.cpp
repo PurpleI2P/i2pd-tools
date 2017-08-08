@@ -60,7 +60,7 @@ void thread_find(const char * prefix){
 #endif
 int main (int argc, char * argv[])
 {
-	if (argc < 2)
+	if (argc < 3)
 	{
 		std::cout << "Usage: " << argv[0] << " filename generatestring <signature type>" << std::endl;
 		return 0;
