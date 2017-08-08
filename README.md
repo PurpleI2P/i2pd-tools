@@ -87,6 +87,13 @@ or
 | RSA-SHA512-4096      | 6      |
 | EDDSA-SHA512-ED25519 | 7      |
 
+### vain
+
+Vanity generation adress.
+
+#### Usage
+
+./vain privatekey.dat prefix <signature>
 
 
 ### keyinfo
