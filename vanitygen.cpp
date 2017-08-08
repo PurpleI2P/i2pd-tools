@@ -62,7 +62,7 @@ int main (int argc, char * argv[])
 {
 	if (argc < 2)
 	{
-		std::cout << "Usage: keygen filename generatestring <signature type>" << std::endl;
+		std::cout << "Usage: " << argv[0] << " filename generatestring <signature type>" << std::endl;
 		return 0;
 	}
 	i2p::crypto::InitCrypto (false);
