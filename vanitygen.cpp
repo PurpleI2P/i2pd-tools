@@ -60,14 +60,14 @@ void thread_find(const char * prefix){
 #endif
 int main (int argc, char * argv[])
 {
-	if (argc < 2)
+	if ( argc < 3 )
 	{
 		std::cout << "Usage: " << argv[0] << " filename generatestring <signature type>" << std::endl;
 		return 0;
 	}
 	i2p::crypto::InitCrypto (false);
 	type = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;	
-	if (argc > 3) 
+	if ( argc > 3 ) 
 		type = NameToSigType(std::string(argv[3]));
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			keys = i2p::data::PrivateKeys::CreateRandomKeys (type);
