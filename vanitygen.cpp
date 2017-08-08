@@ -19,7 +19,25 @@ static uint8_t * PaddingBuf;
 static unsigned long long hash;
 
 #define CPU_ONLY
+static bool check_prefix(const char * buf){
+unsigned short size_str=0;
+while(*buf)
+{
+ if(
+ *buf < 48 
+ || 
+ (*buf > 57 && *buf < 65) 
+ ||
+ (*buf > 64 && *buf < 94) 
+ || *buf > 125
+ || size_str > 52
+ )return false;
+size_str++;
+*buf++;
+}
 
+return true;
+}
 
 #ifdef CPU_ONLY
 static inline bool NotThat(const char * a, const char *b){
@@ -64,6 +82,10 @@ int main (int argc, char * argv[])
 	if ( argc < 3 )
 	{
 		std::cout << "Usage: " << argv[0] << " filename generatestring <signature type>" << std::endl;
+		return 0;
+	}
+	if(!check_prefix(argv[2])){
+		std::cout << "Not correct prefix" << std::endl;
 		return 0;
 	}
 	i2p::crypto::InitCrypto (false);
