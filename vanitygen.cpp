@@ -22,7 +22,6 @@ static unsigned long long hash;
 
 
 #ifdef CPU_ONLY
-// XXX: make this faster
 static inline bool NotThat(const char * a, const char *b){
 while(*b)
  if(*a++!=*b++) return true;
@@ -30,7 +29,9 @@ return false;
 }
 
 inline void twist_cpu(uint8_t * buf,size_t * l0){
-//TODO: NORMAL IMPLEMENTATION
+//TODO: NORMAL IMPLEMENTATION,\
+As in miner...
+
 	RAND_bytes(buf,padding_size);
 }
 
@@ -112,6 +113,12 @@ int main (int argc, char * argv[])
 			}
 
   // TODO: multi threading
+/*
+TODO:
+ <orignal> Francezgy переделай пожалуйста треды
+ <orignal> без всех это pthread
+ * orignal has quit (Quit: Leaving)
+*/
   KeyBuf = new uint8_t[keys.GetFullLen()];
   PaddingBuf = keys.GetPadding();
   unsigned int count_cpu = sysconf(_SC_NPROCESSORS_ONLN);
