@@ -16,9 +16,9 @@
 #define INIT_CPUS(count_cpu){\
 cpu = CPU_ALLOC(count_cpu-1);\
 if (cpu == NULL) {\
+std::cout << "CPU_ALLOC error" << std::endl;\
 return 1;\
 }\
-std::cout << "Succefully CPU_ALLOC" << std::endl;\
 }
 
 
