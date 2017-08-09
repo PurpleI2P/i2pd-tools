@@ -19,10 +19,27 @@ static uint8_t * PaddingBuf;
 static unsigned long long hash;
 
 #define CPU_ONLY
+static bool check_prefix(const char * buf){
+unsigned short size_str=0;
+while(*buf)
+{
+ if(
+ *buf < 48 
+ || 
+ (*buf > 57 && *buf < 65) 
+ ||
+ (*buf > 64 && *buf < 94) 
+ || *buf > 125
+ || size_str > 52
+ )return false;
+size_str++;
+*buf++;
+}
 
+return true;
+}
 
 #ifdef CPU_ONLY
-// XXX: make this faster
 static inline bool NotThat(const char * a, const char *b){
 while(*b)
  if(*a++!=*b++) return true;
@@ -30,7 +47,9 @@ return false;
 }
 
 inline void twist_cpu(uint8_t * buf,size_t * l0){
-//TODO: NORMAL IMPLEMENTATION
+//TODO: NORMAL IMPLEMENTATION,\
+As in miner...
+
 	RAND_bytes(buf,padding_size);
 }
 
@@ -63,6 +82,10 @@ int main (int argc, char * argv[])
 	if ( argc < 3 )
 	{
 		std::cout << "Usage: " << argv[0] << " filename generatestring <signature type>" << std::endl;
+		return 0;
+	}
+	if(!check_prefix(argv[2])){
+		std::cout << "Not correct prefix" << std::endl;
 		return 0;
 	}
 	i2p::crypto::InitCrypto (false);
@@ -112,6 +135,12 @@ int main (int argc, char * argv[])
 			}
 
   // TODO: multi threading
+/*
+TODO:
+ <orignal> Francezgy переделай пожалуйста треды
+ <orignal> без всех это pthread
+ * orignal has quit (Quit: Leaving)
+*/
   KeyBuf = new uint8_t[keys.GetFullLen()];
   PaddingBuf = keys.GetPadding();
   unsigned int count_cpu = sysconf(_SC_NPROCESSORS_ONLN);
