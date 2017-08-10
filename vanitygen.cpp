@@ -53,10 +53,10 @@ static inline void mutate_keys_cpu(
 
 static void thread_find(const char * prefix,int id_thread){
 
-  
+#ifndef _WIN32   
   sched_setaffinity(0, sizeof(cpu), cpu);
   cpu++;
-
+#endif
   std::cout << "Thread " << id_thread << " binded" << std::endl;
 
   while(NotThat(keys.GetPublic()->GetIdentHash().ToBase32().c_str(),prefix) and !finded)
@@ -171,3 +171,4 @@ TODO:
 
 	return 0;
 }
+
