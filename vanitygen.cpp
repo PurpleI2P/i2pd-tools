@@ -24,50 +24,89 @@ return true;
 }
 
 
-#ifdef CPU_ONLY
+static size_t ByteStreamToBase32 (const uint8_t * inBuf, size_t len, char * outBuf, size_t outLen)
+{
+	size_t ret = 0, pos = 1;
+	int bits = 8, tmp = inBuf[0];
+	while (ret < outLen && (bits > 0 || pos < len))
+	{ 	
+		if (bits < 5)
+		{
+			if (pos < len)
+			{
+				tmp <<= 8;
+	      		tmp |= inBuf[pos] & 0xFF;
+				pos++;
+	      		bits += 8;
+			}
+			else // last byte
+			{
+				tmp <<= (5 - bits);
+			  	bits = 5;
+			}
+		}	
+	
+		bits -= 5;
+		int ind = (tmp >> bits) & 0x1F;
+		outBuf[ret] = (ind < 26) ? (ind + 'a') : ((ind - 26) + '2');
+		ret++;
+	}
+	outBuf[ret]='\0';
+	return ret;
+}
+
 static inline bool NotThat(const char * a, const char *b){
 while(*b)
  if(*a++!=*b++) return true;
 return false;
 }
 
-inline void twist_cpu(uint8_t * buf){
-//TODO: NORMAL IMPLEMENTATION,\
-As in miner...
 
-	RAND_bytes(buf,padding_size);
+#ifdef CPU_ONLY
+static inline bool thread_find(uint8_t * buf,const char * prefix,int id_thread,unsigned long long throughput){
+/*
+Thanks to orignal ^-^
+For idea and example ^-^
+Orignal is sensei of crypto ;)
+*/
+	std::cout << "Thread " << id_thread << " binded" << std::endl;
+
+	uint8_t b[391] __attribute__((aligned(4)));
+	memcpy (b, buf, 391);
+
+	int len = strlen (prefix);
+
+	SHA256_CTX ctx, ctx1;
+	SHA256_Init(&ctx);
+	SHA256_Update(&ctx, b, MutateByte);
+
+	uint32_t * nonce = (uint32_t *)(b+MutateByte); // in nonce copy of MutateByte of b;
+	(*nonce)+=id_thread*throughput;
+
+	uint8_t hash[32];
+	char addr[53];
+
+	while(throughput-- and !finded){
+
+	memcpy (&ctx1, &ctx, sizeof (SHA256_CTX));
+	SHA256_Update(&ctx1, b + MutateByte, 71);
+	SHA256_Final(hash, &ctx1);
+	ByteStreamToBase32 (hash, 32, addr, len);
+
+	if(	!NotThat(addr,prefix)	){
+		ByteStreamToBase32 (hash, 32, addr, 52);
+		std::cout << "Address found " << addr << " in " << id_thread << std::endl;
+		finded=true;
+		FindedNonce=*nonce;
+		return true;
+	}
+
+	(*nonce)++;
+	hashescounter++;
+	if (finded) break;	
+	}//while
 }
 
-
-// XXX: make this faster
-static inline void mutate_keys_cpu(
-	uint8_t * buf,
-	uint8_t * padding)
-{
-  twist_cpu(padding);
-  thread_mutex.lock();
-  keys.RecalculateIdentHash(buf);
-  thread_mutex.unlock();
-}
-
-
-static void thread_find(const char * prefix,int id_thread){
-
-#ifndef _WIN32   
-  sched_setaffinity(0, sizeof(cpu), cpu);
-  cpu++;
-#endif
-  std::cout << "Thread " << id_thread << " binded" << std::endl;
-
-  while(NotThat(keys.GetPublic()->GetIdentHash().ToBase32().c_str(),prefix) and !finded)
-  {
-    //size_t l0 = 0; \
-      in future.
-
-    mutate_keys_cpu(KeyBuf,PaddingBuf);
-    hash++;
-  }
-}
 #endif
 
 
@@ -86,8 +125,17 @@ int main (int argc, char * argv[])
 	type = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;	
 	if ( argc > 3 ) 
 		type = NameToSigType(std::string(argv[3]));
+
+///////////////
+//For while
+if(type != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519){
+	std::cout << "For a while only ED25519-SHA512" << std::endl;
+	return 0;
+}
+///////////////
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			keys = i2p::data::PrivateKeys::CreateRandomKeys (type);
+			auto keys = i2p::data::PrivateKeys::CreateRandomKeys (type);
 			switch(type){
 			case i2p::data::SIGNING_KEY_TYPE_DSA_SHA1:
 			case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA512_P521:	
@@ -102,67 +150,64 @@ int main (int argc, char * argv[])
 			}
 			switch(type){
 			case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA256_P256:
-			padding_size=64;
+
 			break;
 			case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA384_P384:
-			padding_size=32;
+
 			break;
 			case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA512_P521:
-			padding_size=4;
+
 			break;
 			case i2p::data::SIGNING_KEY_TYPE_RSA_SHA256_2048:
-			padding_size=128;
+
 			break;
 			case i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072:
-			padding_size=256;
+
 			break;
 			case i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096:
-			padding_size=384;
+
 			break;
 			case i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519:
-			padding_size=96;
+			MutateByte=320;
 			break;
 			case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256:
 			case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256_TEST:
-			padding_size=64;
+
 			break;
 			}
 
-  // TODO: multi threading
-/*
-TODO:
- <orignal> Francezgy переделай пожалуйста треды
- <orignal> без всех это pthread
- * orignal has quit (Quit: Leaving)
-*/
-//
+
   KeyBuf = new uint8_t[keys.GetFullLen()];
-  PaddingBuf = keys.GetPadding();
-//
+  keys.ToBuffer (KeyBuf, keys.GetFullLen ());
+
   unsigned int count_cpu = sysconf(_SC_NPROCESSORS_ONLN);
   std::vector<std::thread> threads(count_cpu);
-  INIT_CPUS(count_cpu);
-//
-  std::cout << "Start vanity generator in " << count_cpu << " threads" << std::endl;
-///
-  for ( unsigned int j = count_cpu;j--;)
-   threads[j] = std::thread(thread_find,argv[2],j);
 
-  // SET AFFINITY NOW IN FUNCTION
+  std::cout << "Start vanity generator in " << count_cpu << " threads" << std::endl;
+
+unsigned long long thoughtput = 0x4F4B5A37;
+
+  for ( unsigned int j = count_cpu;j--;){
+   threads[j] = std::thread(thread_find,KeyBuf,argv[2],j,thoughtput);
+   thoughtput+=1000;
+ }
 
   for(unsigned int j = 0; j < count_cpu;j++)
    threads[j].join();
-///
-  std::cout << "Hashes: " << hash << std::endl;
+
+  if(FindedNonce == 0){
+	std::cout << "Don't finded " << std::endl;
+	return 0;	
+  } 
+
+  memcpy (KeyBuf + MutateByte, &FindedNonce, 4);
+  std::cout << "Hashes: " << hashescounter << std::endl;
   
 	std::ofstream f (argv[1], std::ofstream::binary | std::ofstream::out);
 	if (f)
 	{
-		size_t len = keys.GetFullLen ();
-		len = keys.ToBuffer (KeyBuf, len);
-		f.write ((char *)KeyBuf, len);
+		f.write ((char *)KeyBuf, keys.GetFullLen ());
    		delete [] KeyBuf;
-		std::cout << "Destination " << keys.GetPublic ()->GetIdentHash ().ToBase32 () << " created" << std::endl;
 	}
 	else
 		std::cout << "Can't create file " << argv[1] << std::endl;
