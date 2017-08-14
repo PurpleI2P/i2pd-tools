@@ -24,8 +24,5 @@ static uint8_t * KeyBuf;
 
 //static uint8_t * PaddingBuf;
 static unsigned long long hashescounter;
-
-
-//Functions visible and don't need.
-
+unsigned short count_cpu __attribute__((__mode__(QI))); // 1 byte
 
