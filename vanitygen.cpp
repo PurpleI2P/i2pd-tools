@@ -71,7 +71,15 @@ Orignal is sensei of crypto ;)
 */
 	std::cout << "Thread " << id_thread << " binded" << std::endl;
 
+#ifdef MODES
+	uint8_t b[391] __attribute__((__mode__(SI))); // 4 byte == 32 bits, not usefull. i think.
+#else
+	uint8_t b[391];
+#endif
+
+
 	uint8_t b[391] __attribute__((aligned(4)));
+
 	memcpy (b, buf, 391);
 
 	int len = strlen (prefix);
@@ -86,7 +94,7 @@ Orignal is sensei of crypto ;)
 	uint8_t hash[32];
 	char addr[53];
 
-	while(throughput-- and !finded){
+	while(throughput-- and !found){
 
 	memcpy (&ctx1, &ctx, sizeof (SHA256_CTX));
 	SHA256_Update(&ctx1, b + MutateByte, 71);
@@ -96,14 +104,14 @@ Orignal is sensei of crypto ;)
 	if(	!NotThat(addr,prefix)	){
 		ByteStreamToBase32 (hash, 32, addr, 52);
 		std::cout << "Address found " << addr << " in " << id_thread << std::endl;
-		finded=true;
-		FindedNonce=*nonce;
+		found=true;
+		FoundNonce=*nonce;
 		return true;
 	}
 
 	(*nonce)++;
 	hashescounter++;
-	if (finded) break;	
+	if (found) break;	
 	}//while
 }
 
@@ -180,8 +188,19 @@ if(type != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519){
   KeyBuf = new uint8_t[keys.GetFullLen()];
   keys.ToBuffer (KeyBuf, keys.GetFullLen ());
 
+
+  if(!count_cpu)
+   count_cpu = sysconf(_SC_NPROCESSORS_ONLN);
+
+   std::cout << "Start vanity generator in " << (int)count_cpu << " threads" << std::endl;
+
+
+unsigned short attempts = 0;
+while(!found)
+
   unsigned int count_cpu = sysconf(_SC_NPROCESSORS_ONLN);
   std::vector<std::thread> threads(count_cpu);
+
 
   std::cout << "Start vanity generator in " << count_cpu << " threads" << std::endl;
 
@@ -195,12 +214,19 @@ unsigned long long thoughtput = 0x4F4B5A37;
   for(unsigned int j = 0; j < count_cpu;j++)
    threads[j].join();
 
+  
+  if(FoundNonce == 0){
+	RAND_bytes( KeyBuf+MutateByte , 90 );
+	std::cout << "Attempts #" << ++attempts << std::endl;
+   }
+
+
   if(FindedNonce == 0){
 	std::cout << "Don't finded " << std::endl;
 	return 0;	
   } 
 
-  memcpy (KeyBuf + MutateByte, &FindedNonce, 4);
+  memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
   std::cout << "Hashes: " << hashescounter << std::endl;
   
 	std::ofstream f (argv[1], std::ofstream::binary | std::ofstream::out);
@@ -216,4 +242,6 @@ unsigned long long thoughtput = 0x4F4B5A37;
 
 	return 0;
 }
+
+#undef MODES
 
