@@ -68,16 +68,20 @@ Orignal is sensei of crypto ;)
 */
 	std::cout << "Thread " << id_thread << " binded" << std::endl;
 
-	ui4b_t b[391];
-	memcpy (b, buf, 391);
+	union{
+	uint8_t b[391];
+	uint32_t ll;
+	}local;
+	
+	memcpy (local.b, buf, 391);
 
 	int len = strlen (prefix);
 
 	SHA256_CTX ctx, ctx1;
 	SHA256_Init(&ctx);
-	SHA256_Update(&ctx, b, MutateByte);
+	SHA256_Update(&ctx, local.b, MutateByte);
 
-	uint32_t * nonce = (uint32_t *)(b+MutateByte); // in nonce copy of MutateByte of b;
+	uint32_t * nonce = (uint32_t *)(local.b+MutateByte); // in nonce copy of MutateByte of b;
 	(*nonce)+=id_thread*throughput;
 
 	uint8_t hash[32];
@@ -86,7 +90,7 @@ Orignal is sensei of crypto ;)
 	while(throughput-- and !found){
 
 	memcpy (&ctx1, &ctx, sizeof (SHA256_CTX));
-	SHA256_Update(&ctx1, b + MutateByte, 71);
+	SHA256_Update(&ctx1, local.b + MutateByte, 71);
 	SHA256_Final(hash, &ctx1);
 	ByteStreamToBase32 (hash, 32, addr, len);
 
