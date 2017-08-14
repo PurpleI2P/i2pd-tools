@@ -68,7 +68,7 @@ Orignal is sensei of crypto ;)
 */
 	std::cout << "Thread " << id_thread << " binded" << std::endl;
 
-	uint8_t b[391];
+	ui4b_t b[391];
 	memcpy (b, buf, 391);
 
 	int len = strlen (prefix);
