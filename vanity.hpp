@@ -14,11 +14,11 @@
 static std::mutex thread_mutex;
 static i2p::data::SigningKeyType type;
 //static i2p::data::PrivateKeys keys;
-static bool finded=false;
+static bool found=false;
 
 static size_t MutateByte;
 
-static uint32_t FindedNonce=0;
+static uint32_t FoundNonce=0;
 
 static uint8_t * KeyBuf;
 

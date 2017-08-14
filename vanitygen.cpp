@@ -83,7 +83,7 @@ Orignal is sensei of crypto ;)
 	uint8_t hash[32];
 	char addr[53];
 
-	while(throughput-- and !finded){
+	while(throughput-- and !found){
 
 	memcpy (&ctx1, &ctx, sizeof (SHA256_CTX));
 	SHA256_Update(&ctx1, b + MutateByte, 71);
@@ -93,14 +93,14 @@ Orignal is sensei of crypto ;)
 	if(	!NotThat(addr,prefix)	){
 		ByteStreamToBase32 (hash, 32, addr, 52);
 		std::cout << "Address found " << addr << " in " << id_thread << std::endl;
-		finded=true;
-		FindedNonce=*nonce;
+		found=true;
+		FoundNonce=*nonce;
 		return true;
 	}
 
 	(*nonce)++;
 	hashescounter++;
-	if (finded) break;	
+	if (found) break;	
 	}//while
 }
 
@@ -193,7 +193,7 @@ if(type != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519){
 
 
 unsigned short attempts = 0;
-while(!finded)
+while(!found)
 
 {//while
 {//stack(for destructors(vector/thread))
@@ -209,15 +209,15 @@ while(!finded)
   for(unsigned int j = 0; j < count_cpu;j++)
    threads[j].join();
   
-  if(FindedNonce == 0){
-	RAND_bytes( KeyBuf+256 , 90 );
+  if(FoundNonce == 0){
+	RAND_bytes( KeyBuf+MutateByte , 90 );
 	std::cout << "Attempts #" << ++attempts << std::endl;
    }
 
 }//stack
 }//while
 
-  memcpy (KeyBuf + MutateByte, &FindedNonce, 4);
+  memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
   std::cout << "Hashes: " << hashescounter << std::endl;
   
 	std::ofstream f (argv[1], std::ofstream::binary | std::ofstream::out);
