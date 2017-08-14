@@ -1,9 +1,6 @@
 #include "vanity.hpp"
 #define CPU_ONLY
 
-
-
-
 static bool check_prefix(const char * buf){
 unsigned short size_str=0;
 while(*buf)
@@ -71,7 +68,7 @@ Orignal is sensei of crypto ;)
 */
 	std::cout << "Thread " << id_thread << " binded" << std::endl;
 
-	uint8_t b[391] __attribute__((aligned(4)));
+	uint8_t b[391];
 	memcpy (b, buf, 391);
 
 	int len = strlen (prefix);
@@ -86,7 +83,7 @@ Orignal is sensei of crypto ;)
 	uint8_t hash[32];
 	char addr[53];
 
-	while(throughput-- and !finded){
+	while(throughput-- and !found){
 
 	memcpy (&ctx1, &ctx, sizeof (SHA256_CTX));
 	SHA256_Update(&ctx1, b + MutateByte, 71);
@@ -96,14 +93,14 @@ Orignal is sensei of crypto ;)
 	if(	!NotThat(addr,prefix)	){
 		ByteStreamToBase32 (hash, 32, addr, 52);
 		std::cout << "Address found " << addr << " in " << id_thread << std::endl;
-		finded=true;
-		FindedNonce=*nonce;
+		found=true;
+		FoundNonce=*nonce;
 		return true;
 	}
 
 	(*nonce)++;
 	hashescounter++;
-	if (finded) break;	
+	if (found) break;	
 	}//while
 }
 
@@ -114,7 +111,7 @@ int main (int argc, char * argv[])
 {
 	if ( argc < 3 )
 	{
-		std::cout << "Usage: " << argv[0] << " filename generatestring <signature type>" << std::endl;
+		std::cout << "Usage: " << argv[0] << " filename generatestring <threads(default of system)> <signature type>" << std::endl;
 		return 0;
 	}
 	if(!check_prefix(argv[2])){
@@ -122,9 +119,17 @@ int main (int argc, char * argv[])
 		return 0;
 	}
 	i2p::crypto::InitCrypto (false);
-	type = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;	
-	if ( argc > 3 ) 
-		type = NameToSigType(std::string(argv[3]));
+	type = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
+	if ( argc > 3 ){
+		unsigned int tmp = atoi(argv[3]);
+		if(tmp > 255) {
+			std::cout << "Really more than 255 threads?:D Nope, sorry" << std::endl;
+			return 0;
+		}
+		count_cpu=atoi(argv[3]);
+	}if ( argc > 4 ) {
+		type = NameToSigType(std::string(argv[4]));
+	}
 
 ///////////////
 //For while
@@ -148,6 +153,7 @@ if(type != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519){
 			return 0;			
 			break;							
 			}
+//TODO: for other types.
 			switch(type){
 			case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA256_P256:
 
@@ -156,7 +162,7 @@ if(type != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519){
 
 			break;
 			case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA512_P521:
-
+				
 			break;
 			case i2p::data::SIGNING_KEY_TYPE_RSA_SHA256_2048:
 
@@ -180,27 +186,38 @@ if(type != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519){
   KeyBuf = new uint8_t[keys.GetFullLen()];
   keys.ToBuffer (KeyBuf, keys.GetFullLen ());
 
-  unsigned int count_cpu = sysconf(_SC_NPROCESSORS_ONLN);
+  if(!count_cpu)
+   count_cpu = sysconf(_SC_NPROCESSORS_ONLN);
+
+   std::cout << "Start vanity generator in " << count_cpu << " threads" << std::endl;
+
+
+unsigned short attempts = 0;
+while(!found)
+
+{//while
+{//stack(for destructors(vector/thread))
+
   std::vector<std::thread> threads(count_cpu);
-
-  std::cout << "Start vanity generator in " << count_cpu << " threads" << std::endl;
-
-unsigned long long thoughtput = 0x4F4B5A37;
+  unsigned long long thoughtput = 0x4F4B5A37;
 
   for ( unsigned int j = count_cpu;j--;){
    threads[j] = std::thread(thread_find,KeyBuf,argv[2],j,thoughtput);
    thoughtput+=1000;
- }
+  }//for
 
   for(unsigned int j = 0; j < count_cpu;j++)
    threads[j].join();
+  
+  if(FoundNonce == 0){
+	RAND_bytes( KeyBuf+MutateByte , 90 );
+	std::cout << "Attempts #" << ++attempts << std::endl;
+   }
 
-  if(FindedNonce == 0){
-	std::cout << "Don't finded " << std::endl;
-	return 0;	
-  } 
+}//stack
+}//while
 
-  memcpy (KeyBuf + MutateByte, &FindedNonce, 4);
+  memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
   std::cout << "Hashes: " << hashescounter << std::endl;
   
 	std::ofstream f (argv[1], std::ofstream::binary | std::ofstream::out);
