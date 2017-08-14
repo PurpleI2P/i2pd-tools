@@ -13,6 +13,7 @@
 
 
 
+#define MODES
 
 static std::mutex thread_mutex;
 static i2p::data::SigningKeyType type;

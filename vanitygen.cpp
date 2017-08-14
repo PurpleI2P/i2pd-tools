@@ -237,3 +237,5 @@ while(!found)
 	return 0;
 }
 
+#undef MODES
+
