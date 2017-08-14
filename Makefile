@@ -31,7 +31,7 @@ regaddr: $(OBJECTS)
 	$(CXX) -o regaddr regaddr.o $(LDFLAGS) $(LIBS)
 
 vain: $(OBJECTS)
-	$(CXX) -o vain vanitygen.o $(LDFLAGS) -mavx $(LIBS)
+	$(CXX) -o vain vanitygen.o $(LDFLAGS) $(LIBS)
 
 $(OBJECTS): libi2pd.a
 
