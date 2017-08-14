@@ -11,6 +11,9 @@
 #include <vector>
 #include <mutex>
 
+
+
+
 static std::mutex thread_mutex;
 static i2p::data::SigningKeyType type;
 //static i2p::data::PrivateKeys keys;
@@ -24,5 +27,8 @@ static uint8_t * KeyBuf;
 
 //static uint8_t * PaddingBuf;
 static unsigned long long hashescounter;
-unsigned short count_cpu __attribute__((__mode__(QI))); // 1 byte
-
+#ifdef MODES
+unsigned short count_cpu __attribute__((__mode__(QI))); // 1 byte i think don't usefful
+#else
+unsigned short count_cpu;
+#endif

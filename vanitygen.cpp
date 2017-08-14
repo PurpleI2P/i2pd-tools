@@ -67,8 +67,11 @@ For idea and example ^-^
 Orignal is sensei of crypto ;)
 */
 	std::cout << "Thread " << id_thread << " binded" << std::endl;
-
-	uint8_t b[391];  __attribute__((__mode__(SI))); // 4 byte == 32 bits, not usefull. i think.
+#ifdef MODES
+	uint8_t b[391] __attribute__((__mode__(SI))); // 4 byte == 32 bits, not usefull. i think.
+#else
+	uint8_t b[391];
+#endif
 	memcpy (b, buf, 391);
 
 	int len = strlen (prefix);
