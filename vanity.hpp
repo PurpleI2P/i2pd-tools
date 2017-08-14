@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <vector>
 #include <mutex>
+typedef unsigned int __attribute__((__mode__(SI))) ui4b_t; //32 / 8 = 4 byte
 
 static std::mutex thread_mutex;
 static i2p::data::SigningKeyType type;
