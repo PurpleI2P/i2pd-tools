@@ -1,6 +1,59 @@
 #include "vanity.hpp"
 #define CPU_ONLY
 
+static void CalculateW (const uint8_t block[64], uint32_t W[64])
+{
+/*
+implementation of orignal
+*/
+	for (int i = 0; i < 16; i++)
+		W[i] = be32toh (((uint32_t *)(block))[i]);
+	for (int i = 16; i < 64; i++)
+		W[i] = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
+}
+ 
+static void TransformBlock (uint32_t state[8], const uint32_t W[64])
+{
+/*
+implementation of orignal
+*/
+	uint32_t S[8];
+	memcpy(S, state, 32);
+
+	uint32_t t0, t1;
+	RNDr(S, W, 0, 0x428a2f98); RNDr(S, W, 1, 0x71374491); RNDr(S, W, 2, 0xb5c0fbcf); RNDr(S, W, 3, 0xe9b5dba5);
+	RNDr(S, W, 4, 0x3956c25b); RNDr(S, W, 5, 0x59f111f1); RNDr(S, W, 6, 0x923f82a4); RNDr(S, W, 7, 0xab1c5ed5);
+	RNDr(S, W, 8, 0xd807aa98); RNDr(S, W, 9, 0x12835b01); RNDr(S, W, 10, 0x243185be); RNDr(S, W, 11, 0x550c7dc3);
+	RNDr(S, W, 12, 0x72be5d74); RNDr(S, W, 13, 0x80deb1fe); RNDr(S, W, 14, 0x9bdc06a7); RNDr(S, W, 15, 0xc19bf174);
+	RNDr(S, W, 16, 0xe49b69c1); RNDr(S, W, 17, 0xefbe4786); RNDr(S, W, 18, 0x0fc19dc6); RNDr(S, W, 19, 0x240ca1cc);
+	RNDr(S, W, 20, 0x2de92c6f); RNDr(S, W, 21, 0x4a7484aa); RNDr(S, W, 22, 0x5cb0a9dc); RNDr(S, W, 23, 0x76f988da);
+	RNDr(S, W, 24, 0x983e5152); RNDr(S, W, 25, 0xa831c66d); RNDr(S, W, 26, 0xb00327c8); RNDr(S, W, 27, 0xbf597fc7);
+	RNDr(S, W, 28, 0xc6e00bf3); RNDr(S, W, 29, 0xd5a79147); RNDr(S, W, 30, 0x06ca6351); RNDr(S, W, 31, 0x14292967);
+	RNDr(S, W, 32, 0x27b70a85); RNDr(S, W, 33, 0x2e1b2138); RNDr(S, W, 34, 0x4d2c6dfc); RNDr(S, W, 35, 0x53380d13);
+	RNDr(S, W, 36, 0x650a7354); RNDr(S, W, 37, 0x766a0abb); RNDr(S, W, 38, 0x81c2c92e); RNDr(S, W, 39, 0x92722c85);
+	RNDr(S, W, 40, 0xa2bfe8a1); RNDr(S, W, 41, 0xa81a664b); RNDr(S, W, 42, 0xc24b8b70); RNDr(S, W, 43, 0xc76c51a3);
+	RNDr(S, W, 44, 0xd192e819); RNDr(S, W, 45, 0xd6990624); RNDr(S, W, 46, 0xf40e3585); RNDr(S, W, 47, 0x106aa070);
+	RNDr(S, W, 48, 0x19a4c116); RNDr(S, W, 49, 0x1e376c08); RNDr(S, W, 50, 0x2748774c); RNDr(S, W, 51, 0x34b0bcb5);
+	RNDr(S, W, 52, 0x391c0cb3); RNDr(S, W, 53, 0x4ed8aa4a); RNDr(S, W, 54, 0x5b9cca4f); RNDr(S, W, 55, 0x682e6ff3);
+	RNDr(S, W, 56, 0x748f82ee); RNDr(S, W, 57, 0x78a5636f); RNDr(S, W, 58, 0x84c87814); RNDr(S, W, 59, 0x8cc70208);
+	RNDr(S, W, 60, 0x90befffa); RNDr(S, W, 61, 0xa4506ceb); RNDr(S, W, 62, 0xbef9a3f7); RNDr(S, W, 63, 0xc67178f2);
+	
+	for (int i = 0; i < 8; i++)	state[i] += S[i];		
+}
+
+void HashNextBlock (uint32_t state[8], const uint8_t * block)
+{
+/*
+implementation of orignal
+*/
+	uint32_t W[64];
+	CalculateW (block, W);
+	TransformBlock (state, W);
+}
+
+
+
+
 static bool check_prefix(const char * buf){
 unsigned short size_str=0;
 while(*buf)
@@ -68,29 +121,68 @@ Orignal is sensei of crypto ;)
 */
 	std::cout << "Thread " << id_thread << " binded" << std::endl;
 
-	union{
-	uint8_t b[391];
-	uint32_t ll;
-	}local;
+	uint8_t * b = (uint8_t*)malloc(391*sizeof(uint8_t));
+	uint8_t * hash = (uint8_t*)malloc(32*sizeof(uint32_t));
+
+	if(!b or !hash){
+		std::cout << "Error allocate memory " << std::endl;
+		exit(-1);
+	}
+
+	if(
+	!posix_memalign((void**)&b,4,391*sizeof(uint8_t)) 
+	or 
+	!posix_memalign((void**)&hash,4,32*sizeof(uint32_t) )
+	){
+		
+		std::cout << "Error alignment memory " << std::endl;
+		exit(-1);		
 	
-	memcpy (local.b, buf, 391);
+	}
+
+	memcpy (b, buf, 391);
 
 	int len = strlen (prefix);
 
+	// precalculate first 5 blocks (320 bytes)
+	uint32_t state[8] = 
+		{ 0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 
+		  0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19 };
+
+	HashNextBlock (state, b);
+	HashNextBlock (state, b + 64);
+	HashNextBlock (state, b + 128);
+	HashNextBlock (state, b + 192);
+	HashNextBlock (state, b + 256);
+
+	// pre-calculate last W
+	uint32_t lastW[64];
+	CalculateW (lastBlock, lastW); 	
+
 	SHA256_CTX ctx, ctx1;
 	SHA256_Init(&ctx);
-	SHA256_Update(&ctx, local.b, MutateByte);
+	SHA256_Update(&ctx, b, MutateByte);
 
-	uint32_t * nonce = (uint32_t *)(local.b+MutateByte); // in nonce copy of MutateByte of b;
+	uint32_t * nonce = (uint32_t *)(b+MutateByte); // in nonce copy of MutateByte of b;
 	(*nonce)+=id_thread*throughput;
 
-	uint8_t hash[32];
 	char addr[53];
+	uint32_t state1[8];
 
 	while(throughput-- and !found){
+	memcpy (state1, state, 32);
+	// calculate hash of block with nonce	
+	HashNextBlock (state1, b + 320);
+	// apply last block	
+	TransformBlock (state1, lastW);		
+	// get final hash
+
+	for (int j = 8; j--;)
+		hash[j] = htobe32 (state1[j]);
+
 
 	memcpy (&ctx1, &ctx, sizeof (SHA256_CTX));
-	SHA256_Update(&ctx1, local.b + MutateByte, 71);
+	SHA256_Update(&ctx1, b + MutateByte, 71);
 	SHA256_Final(hash, &ctx1);
 	ByteStreamToBase32 (hash, 32, addr, len);
 
