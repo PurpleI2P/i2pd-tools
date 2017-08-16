@@ -191,12 +191,19 @@ Orignal is sensei of crypto ;)
 		std::cout << "Address found " << addr << " in " << id_thread << std::endl;
 		found=true;
 		FoundNonce=*nonce;
+		free(hash);
+		free(b);
 		return true;
 	}
 
 	(*nonce)++;
 	hashescounter++;
-	if (found) break;	
+	if (found){
+	free(hash);
+	free(b);
+	 break;	
+	}
+
 	}//while
 }
 
