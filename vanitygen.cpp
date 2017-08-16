@@ -1,7 +1,7 @@
 #include "vanity.hpp"
 #define CPU_ONLY
 
-static void CalculateW (const uint8_t block[64], uint32_t W[64])
+static void inline CalculateW (const uint8_t block[64], uint32_t W[64])
 {
 /*
 implementation of orignal
@@ -12,7 +12,7 @@ implementation of orignal
 		W[i] = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
 }
  
-static void TransformBlock (uint32_t state[8], const uint32_t W[64])
+static void inline TransformBlock (uint32_t state[8], const uint32_t W[64])
 {
 /*
 implementation of orignal
@@ -41,7 +41,7 @@ implementation of orignal
 	for (int i = 0; i < 8; i++)	state[i] += S[i];		
 }
 
-void HashNextBlock (uint32_t state[8], const uint8_t * block)
+void inline HashNextBlock (uint32_t state[8], const uint8_t * block)
 {
 /*
 implementation of orignal
