@@ -68,7 +68,7 @@ while(*buf)
  || size_str > 52
  )return false;
 size_str++;
-*buf++;
+buf++;
 }
 return true;
 }
