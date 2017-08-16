@@ -9,7 +9,9 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
-
+#ifdef _WIN32
+#include <windows.h>
+#endif
 // sha256
 #define Ch(x, y, z)	((x & (y ^ z)) ^ z)
 #define Maj(x, y, z)	((x & (y | z)) | (y & z))
