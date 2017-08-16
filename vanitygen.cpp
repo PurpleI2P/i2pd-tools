@@ -74,7 +74,7 @@ return true;
 }
 
 
-static size_t ByteStreamToBase32 (const uint8_t * inBuf, size_t len, char * outBuf, size_t outLen)
+static inline size_t ByteStreamToBase32 (const uint8_t * inBuf, size_t len, char * outBuf, size_t outLen)
 {
 	size_t ret = 0, pos = 1;
 	int bits = 8, tmp = inBuf[0];
@@ -169,28 +169,29 @@ while(throughput-- and !found){
 	// apply last block	
 	TransformBlock (state1, lastW);		
 	// get final hash
-	for (int j = 0; j < 8; j++)
+	for (int j = 8; j--;)
 		hash[j] = htobe32 (state1[j]);
 
 /*
 
 */
 	ByteStreamToBase32 ((uint8_t*)hash, 32, addr, len);
+//	std::cout << addr << std::endl;
 	if(	!NotThat(addr,prefix)	){
 		ByteStreamToBase32 ((uint8_t*)hash, 32, addr, 52);
 		std::cout << "Address found " << addr << " in " << id_thread << std::endl;
 		found=true;
 		FoundNonce=*nonce;
-		//free(hash);
-		//free(b);
+		free(hash);
+		free(b);
 		return true;
 	}
 
 	(*nonce)++;
 	hashescounter++;
 	if (found){
-	//free(hash);
-	//free(b);
+	free(hash);
+	free(b);
 	break;	
 	}
 
