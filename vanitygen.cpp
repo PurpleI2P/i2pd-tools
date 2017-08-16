@@ -279,10 +279,19 @@ if(type != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519){
 
   KeyBuf = new uint8_t[keys.GetFullLen()];
   keys.ToBuffer (KeyBuf, keys.GetFullLen ());
-
+#ifdef __linux__
   if(!count_cpu)
    count_cpu = sysconf(_SC_NPROCESSORS_ONLN);
-
+#elif _WIN32
+  if(!count_cpu){
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo(&sysinfo);
+	count_cpu = sysinfo.dwNumberOfProcessors;
+	}
+#else
+  if(!count_cpu)
+  	 count_cpu = 4;
+#endif
    std::cout << "Start vanity generator in " << count_cpu << " threads" << std::endl;
 
 
