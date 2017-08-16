@@ -2,7 +2,7 @@ I2PD_PATH = i2pd
 LIBI2PD_PATH = $(I2PD_PATH)/libi2pd
 LIBI2PD_CLIENT_PATH = $(I2PD_PATH)/libi2pd_client
 CXX = g++
-FLAGS = -g -Wall -std=c++11
+FLAGS = -g -Wall -std=c++11 -Wno-misleading-indentation
 INCFLAGS = -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH) -I$(I2PD_PATH)
 CXXFLAGS = $(FLAGS) $(INCFLAGS)
 LDFLAGS = -Wl,-rpath,/usr/local/lib
