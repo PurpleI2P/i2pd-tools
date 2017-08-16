@@ -121,23 +121,12 @@ Orignal is sensei of crypto ;)
 */
 	std::cout << "Thread " << id_thread << " binded" << std::endl;
 
-	uint8_t * b = (uint8_t*)malloc(391*sizeof(uint8_t));
-	uint8_t * hash = (uint8_t*)malloc(32*sizeof(uint32_t));
+	uint8_t * b = (uint8_t*)aligned_alloc(4,391*sizeof(uint8_t));
+	uint8_t * hash = (uint8_t*)aligned_alloc(4,32*sizeof(uint32_t));
 
 	if(!b or !hash){
-		std::cout << "Error allocate memory " << std::endl;
+		std::cout << "Error allocate/alignment memory " << std::endl;
 		exit(-1);
-	}
-
-	if(
-	!posix_memalign((void**)&b,4,391*sizeof(uint8_t)) 
-	or 
-	!posix_memalign((void**)&hash,4,32*sizeof(uint32_t) )
-	){
-		
-		std::cout << "Error alignment memory " << std::endl;
-		exit(-1);		
-	
 	}
 
 	memcpy (b, buf, 391);
