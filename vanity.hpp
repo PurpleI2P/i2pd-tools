@@ -5,22 +5,25 @@
 #include <openssl/rand.h>
 #include "Crypto.h"
 #include "Identity.h"
+#include "I2PEndian.h"
 #include "common/key.hpp"
 #include <thread>
 #include <unistd.h>
 #include <vector>
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
 // sha256
-#define Ch(x, y, z)	((x & (y ^ z)) ^ z)
+#define Ch(x, y, z)		((x & (y ^ z)) ^ z)
 #define Maj(x, y, z)	((x & (y | z)) | (y & z))
-#define SHR(x, n)	(x >> n)
-#define ROTR(x, n)	((x >> n) | (x << (32 - n)))
-#define S0(x)		(ROTR(x, 2) ^ ROTR(x, 13) ^ ROTR(x, 22))
-#define S1(x)		(ROTR(x, 6) ^ ROTR(x, 11) ^ ROTR(x, 25))
-#define s0(x)		(ROTR(x, 7) ^ ROTR(x, 18) ^ SHR(x, 3))
-#define s1(x) (ROTR(x, 17) ^ ROTR(x, 19) ^ SHR(x, 10))
+#define SHR(x, n)		(x >> n)
+#define ROTR(x, n)		((x >> n) | (x << (32 - n)))
+#define S0(x)			(ROTR(x, 2) ^ ROTR(x, 13) ^ ROTR(x, 22))
+#define S1(x)			(ROTR(x, 6) ^ ROTR(x, 11) ^ ROTR(x, 25))
+#define s0(x)			(ROTR(x, 7) ^ ROTR(x, 18) ^ SHR(x, 3))
+#define s1(x)			(ROTR(x, 17) ^ ROTR(x, 19) ^ SHR(x, 10))
 
 #define RND(a, b, c, d, e, f, g, h, k) \
 	t0 = h + S1(e) + Ch(e, f, g) + k; \
