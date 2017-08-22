@@ -2,11 +2,25 @@ I2PD_PATH = i2pd
 LIBI2PD_PATH = $(I2PD_PATH)/libi2pd
 LIBI2PD_CLIENT_PATH = $(I2PD_PATH)/libi2pd_client
 CXX = g++
-FLAGS = -g -Wall -std=c++11 -Wno-misleading-indentation
+FLAGS = -Wall -std=c++11 -Wno-misleading-indentation
+
+ifneq ($(UNAME),Darwin && $(UNAME),Linux)
+	FLAGS += -Os -D_MT -DWIN32 -D_WINDOWS -DWIN32_LEAN_AND_MEAN
+	BOOST_SUFFIX = -mt
+else
+	FLAGS += -g
+endif
+
 INCFLAGS = -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH) -I$(I2PD_PATH)
-CXXFLAGS = $(FLAGS) $(INCFLAGS)
+CXXFLAGS = $(FLAGS)
 LDFLAGS = -Wl,-rpath,/usr/local/lib
-LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system -lboost_date_time -lboost_filesystem -lboost_program_options -lssl -lcrypto -lpthread -lrt -lz
+LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lpthread -lz
+
+ifeq ($(UNAME),Darwin || $(UNAME),Linux)
+	LIBS += -lrt
+else
+	LIBS += -lws2_32 -lwsock32 -lstdc++ -liphlpapi
+endif
 
 SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
@@ -42,7 +56,7 @@ $(I2PD_LIB):
 	$(MAKE) -C $(I2PD_PATH) mk_obj_dir $(I2PD_LIB)
 
 %.o: %.cpp libi2pd.a
-	$(CXX) -o $@ -c $(CXXFLAGS) $< $(INCFLAGS)
+	$(CXX) -o $@ -c $(CXXFLAGS) $(INCFLAGS) $<
 
 count:
 	wc *.c *.cc *.C *.cpp *.h *.hpp
