@@ -4,11 +4,13 @@ LIBI2PD_CLIENT_PATH = $(I2PD_PATH)/libi2pd_client
 CXX = g++
 FLAGS = -Wall -std=c++11 -Wno-misleading-indentation
 
-ifneq ($(UNAME),Darwin && $(UNAME),Linux)
+UNAME = $(shell uname -s)
+ifeq ($(UNAME),Linux)
+	FLAGS += -g
+else
+# Win32
 	FLAGS += -Os -D_MT -DWIN32 -D_WINDOWS -DWIN32_LEAN_AND_MEAN
 	BOOST_SUFFIX = -mt
-else
-	FLAGS += -g
 endif
 
 INCFLAGS = -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH) -I$(I2PD_PATH)
@@ -16,7 +18,7 @@ CXXFLAGS = $(FLAGS)
 LDFLAGS = -Wl,-rpath,/usr/local/lib
 LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lpthread -lz
 
-ifeq ($(UNAME),Darwin || $(UNAME),Linux)
+ifeq ($(UNAME),Linux)
 	LIBS += -lrt
 else
 	LIBS += -lws2_32 -lwsock32 -lstdc++ -liphlpapi
