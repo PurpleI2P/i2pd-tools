@@ -1,10 +1,11 @@
+UNAME = $(shell uname -s)
+
 I2PD_PATH = i2pd
 LIBI2PD_PATH = $(I2PD_PATH)/libi2pd
 LIBI2PD_CLIENT_PATH = $(I2PD_PATH)/libi2pd_client
 CXX = g++
 FLAGS = -Wall -std=c++11 -Wno-misleading-indentation
 
-UNAME = $(shell uname -s)
 ifeq ($(UNAME),Linux)
 	FLAGS += -g
 else
@@ -16,12 +17,14 @@ endif
 INCFLAGS = -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH) -I$(I2PD_PATH)
 CXXFLAGS = $(FLAGS)
 LDFLAGS = -Wl,-rpath,/usr/local/lib
-LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lpthread -lz
+LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lz
 
 ifeq ($(UNAME),Linux)
-	LIBS += -lrt
+	LIBS += -lrt -lpthread
 else
-	LIBS += -lws2_32 -lwsock32 -lstdc++ -liphlpapi
+# Win32
+	LIBS += -lws2_32 -lwsock32 -lgdi32 -liphlpapi -lstdc++ -lpthread
+	LDFLAGS += -Wl,-Bstatic -static-libgcc -static-libstdc++
 endif
 
 SOURCES = $(wildcard *.cpp)
