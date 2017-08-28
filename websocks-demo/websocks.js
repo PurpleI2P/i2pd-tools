@@ -1,293 +1,137 @@
+var stream = require('stream');
 
-function ws_try_connect()
+
+function WebSocks(wsurl)
 {
+    this._wsurl = wsurl;
+    this._ws = null;
+    this._ouraddr = null;
+    this._remoteAddr = null;
+    this._recvbuffer = stream.PassThrough();
+    this._sendbuffer = stream.PassThrough();
+}
 
+WebSocks.prototype.createListener = function(callback) {
+    var self = this;
+    self._doAccept(function(err) {
+        if(err) callback(err, null);
+        else {
+            callback(null, self._sendbuffer, self._recvbuffer);
+        }
+    }, function(data) {
+        self._recvbuffer.write(data);
+    });
+};
 
-    var elem = document.getElementById("irc-window");
-    elem.remove();
-    elem = document.createElement("div");
-    elem.id ="irc-window";
-    document.body.appendChild(elem);
-
-    var input = document.createElement("input");
-    input.setAttribute("class", "text-input");
-    elem.appendChild(input);
-
-
-    var irc = {
-        connected: 0,
-        line_in: "",
-        target: "",
-        nick: "ebin",
-        panes: {},
-    };
-
-    function irc_ui_show_pane(pane)
-    {
-        irc_ui_ensure_pane(pane);
-        // hide all other panes
-        for (var k in irc.panes) {
-            if(k == pane) {
-                irc.panes[k].elem.style = "display: inline-block";
-                irc.target = k;
-            } else {
-                irc.panes[k].elem.style = "display: none";
+WebSocks.prototype._doAccept = function(accept_cb, recv_cb) {
+    var self = this;
+    self._socket(function (err, data) {
+        if(!self._remoteAddr)
+        {
+            if(!data)
+            {
+                // send handshake
+                self._ws.send("accept");
+            }
+            else
+            {
+                // this means handshake read
+                var j = JSON.parse(data);
+                if(j.error) {
+                    connect_cb(j.error);
+                } else if(j.success){
+                    self._remoteAddr = host;
+                    connect_cb(null);
+                }
+                // repeat
+                setTimeout(function() {
+                    self._doAccept(connect_cb);
+                }, 10);
             }
         }
-    }
-
-    function irc_ui_ensure_pane(pane)
-    {
-        if(irc.panes[pane]) return;
-        var e = document.createElement("pre");
-        e.setAttribute("class", "text-window");
-        e.style = "display: none";
-        e.setAttribute("panename", pane);
-        irc.panes[pane] = {
-            elem: e,
-            name: pane,
-        };
-        var root = document.getElementById("irc-window");
-        root.appendChild(e);
-    }
-
-    function irc_ui_println(line, pane)
-    {
-        if(line == "") return;
-        var node = document.createTextNode(line);
-        var e = document.createElement("div");
-        e.appendChild(node);
-        if(!pane) {
-            pane = " ";
+        else
+        {
+            recv_cb(err, data);
         }
-        irc_ui_ensure_pane(pane);
-        var p = irc.panes[pane];
-        if(p) {
-            p.elem.appendChild(e);
-            if (pane == irc.target) {
-                window.scroll(0, p.elem.offsetTop + p.elem.offsetHeight);
+    });
+};
+
+WebSocks.prototype._closed = function()
+{
+    var self = this;
+    self._recvbuffer.close();
+    self._sendbuffer.close();
+    self._ws.close();
+};
+
+WebSocks.prototype.connect = function(host, port, connect_cb) {
+    var self = this;
+    self._socket(function (err, data) {
+        if(!self._remoteAddr)
+        {
+            if(!data)
+            {
+                // send handshake
+                self._ws.send("connect "+host+":"+port);
             }
-        } else {
-            console.log("No pane called "+pane);
-        }
-    
-    }
-
-    function irc_on_privmsg(src, target, msg)
-    {
-        var parts = src.split("!");
-        src = parts[0].slice(1);
-        irc_ui_println("<"+src+ "> "+msg, target);
-    }
-
-    function irc_on_greeted(conn)
-    {
-        irc_ui_println("successfully joined irc");
-    }
-
-    function irc_on_join(src, target)
-    {
-        irc_ui_println("--> "+src, target);
-    }
-
-    function irc_on_part(src, target)
-    {
-        irc_ui_println("<-- "+src, target);
-    }
-
-    function irc_on_other(src, cmd, target, msg)
-    {
-        irc_ui_println("<"+src+"> "+msg, src);
-    }
-
-    function irc_process_in(conn)
-    {
-        var line = irc.line_in.trim();
-        console.log("--> "+line);
-        if(line.startsWith("PING ")) {
-            // handle ping
-            irc_sendline(conn, "PONG "+line.slice(5));
-            return;
-        }
-        var parts = line.split(" ");
-        if (parts.length > 2) {
-            var src = parts[0];
-            var cmd = parts[1];
-            var target = parts[2];
-            var idx = line.indexOf(target);
-            var msg = line.slice(idx+target.length+2);
-            if (cmd == "PRIVMSG") {
-                irc_on_privmsg(src, target, msg);
-                return;
-            }
-            if (cmd == "JOIN" ) {
-                irc_on_join(src, target);
-                return;
-            }
-            if (cmd == "PART") {
-                irc_on_part(src, target);
-                return;
-            }
-           
-            if(cmd == "PONG") return;
-            if(cmd == "376") {
-                // we have been greeted fully
-                irc_on_greeted(conn);
-                return;
-            }
-            irc_on_other(src.slice(1), cmd, target, msg);
-        }
-        irc_ui_println(line);
-    }
-
-    function irc_data(conn, data)
-    {
-        data = irc.line_in + data;
-        var lines = data.split("\n");
-        for(var idx = 0; idx < lines.length; idx++) {
-            irc.line_in = lines [idx] + "\n";
-            irc_process_in(conn);
-        }
-    }
-
-    function irc_sendline(conn, line)
-    {
-        console.log("<-- "+ line);
-        conn.send(line + "\n");
-    }
-
-    function irc_privmsg(conn, target, msg)
-    {
-        irc_ui_println("<"+irc.nick+"> "+msg, target);
-        irc_sendline(conn, "PRIVMSG "+target+" :"+msg);
-    }
-
-    function irc_join_channel(conn, chnl)
-    {
-        irc_sendline(conn, "JOIN "+chnl);
-        irc_ui_ensure_pane(chnl);
-    }
-
-    function handle_input_command(conn, arg, params)
-    {
-        arg = arg.toLowerCase();
-        if (arg == "j" || arg == "join") {
-            for (var idx = 0 ; idx < params.length; idx ++) {
-                irc_join_channel(conn, params[idx]);
-            }
-            return;
-        }
-
-        if(arg == "lp" || arg == "listpanes") {
-            irc_ui_println("--- begin list of panes", irc.target);
-            for (var k in irc.panes) {
-                if(k == irc.target) {
-                    irc_ui_println("(active) : "+k, irc.target);
+            else
+            {
+                // this means handshake read
+                var j = JSON.parse(data);
+                if(j.error) {
+                    connect_cb(j.error, null, null);
+                } else if(j.success){
+                    self._remoteAddr = host;
+                    connect_cb(null, self._sendbuffer, self._recvbuffer);
                 } else {
-                    irc_ui_println("         : "+k, irc.target);
+                    connect_cb("failed to connect", null, null);
                 }
             }
-            irc_ui_println("--- end list of panes", irc.target);
-            return;
         }
-
-
-        if(arg == "m" || arg == "msg") {
-            irc_privmsg(conn, params[0], params.slice(1).join(" "));
-            return;
+        else
+        {
+            self._recvbuffer.write(data);
         }
+    });
+};
 
-        if(arg == "n" || arg == "nick") {
-            irc_sendline(conn, "NICK "+params[0]);
-            irc.nick = params[0];
-            return;
-        }
-        if(arg == "r" || arg == "raw") {
-            irc_sendline(conn, params.join(" "));
-            return;
-        }
-        if(arg == "q" || arg == "quit") {
-            irc_sendline(conn, "QUIT");
-            return;
-        }
-        if(arg == "w" || arg == "window") {
-            irc.target = params[0];
-            irc_ui_show_pane(irc.target);
-            return;
-        }
-    }
+WebSocks.prototype._socket = function(cb) {
+    var self = this;
+    self._ws = new WebSocket(self._wsurl);
+    self._ws.onclose = function(ev) {
+        self._closed();
+    };
 
-    function handle_input_line(conn, line)
-    {
-        if(line[0] == "/") {
-            var parts = line.split(" ");
-            handle_input_command(conn, parts[0].slice(1), parts.slice(1));
-        } else {
-            irc_privmsg(conn, irc.target, line);
-        }
-    }
+    self._ws.onopen = function(ev) {
+        console.log("connected to websocks");
+        self._ws.send("getaddr");
+    };
 
-    function irc_connected(conn, url)
-    {
-        console.log("connected to irc");
-        irc_ui_show_pane(" ");
-        irc_ui_println("connecting to "+url+"...");
-        // send user command
-        irc_sendline(conn, "NICK "+irc.nick);
-        irc_sendline(conn, "USER "+irc.nick+" "+irc.nick+" "+irc.nick+" :"+irc.nick);
-        irc.pinger = setInterval(function(){
-            if(irc.connected) {
-                irc_sendline(conn, "PING :i-hate-tcp-lol-"+new Date().getTime());
-            }
-        }, 10000);
-        input.addEventListener("keypress", function(ev){
-            // handle enter key
-            switch(ev.key) {
-            case "Enter":
-                handle_input_line(conn, input.value);
-                ev.preventDefault();
-                input.value = "";
-            }
-            return;
-        });
-    }
-
-    var e = document.getElementById("ws-server");
-    var ws = new WebSocket(e.value);
-    e = document.getElementById("irc-server");
-    var irc_url = e.value;
-
-    ws.onclose = function(err) {
-        console.log("connection closed "+err);
-        irc.connected = 0;
-        clearInterval(irc.pinger);
-        irc_ui_println("connection closed");
-    }
-
-    ws.onopen = function(ev) {
-        console.log("connect to "+irc_url);
-        irc_ui_println("resolving "+irc_url+" ...");
-        ws.send(irc_url);
-    }
-    ws.onmessage = function(ev) {
-        var data = ev.data;
-        if(irc.connected) {
-            irc_data(ws, data);
-        } else {
-            var j = JSON.parse(data);
+    self._ws.onmessage = function(ev) {
+        if(!self._ouraddr)
+        {
+            var j = JSON.parse(ev.data);
             if(j.error) {
-                console.log("WebSOCKS error: "+j.error);
-                console.log("try again");
-                setTimeout(function() {
-                    ws.send(irc_url);
-                }, 1000);
+                console.log("connect error: "+j.error);
+                cb(j.error, null);
+                return;
             }
-            irc.connected = j.success == "1";
-            if(irc.connected) {
-                irc_connected(ws, irc_url);
+            if(j.success && j.destination) {
+                self._ouraddr = j.destination;
+            } else {
+                cb("failed to connect", null);
+                return;
             }
+            self._sendbuffer.on("data", function(data) {
+                self._ws.send(data);
+            });
+            cb(null, null);
         }
-    }
+        else
+            cb(null, ev.data);
+    };
+};
 
-
-}
+module.exports = {
+    "WebSocks": WebSocks,
+};
