@@ -6,7 +6,12 @@ static void inline CalculateW (const uint8_t block[64], uint32_t W[64])
 implementation of orignal
 */
 	for (int i = 0; i < 16; i++)
+#ifdef _WIN32
 		W[i] = htobe32(((uint32_t *)(block))[i]);
+#else
+		W[i] = be32toh(((uint32_t *)(block))[i]);
+#endif
+
 	for (int i = 16; i < 64; i++)
 		W[i] = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
 }
