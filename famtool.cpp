@@ -56,40 +56,31 @@ static std::shared_ptr<Verifier> LoadCertificate (const std::string& filename)
         if (family) family[0] = 0;
       }	
       auto pkey = X509_get_pubkey (cert);
-      int keyType = EVP_PKEY_type(pkey->type);
-      switch (keyType)
-  		{
-        case EVP_PKEY_EC:
+
+      EC_KEY * ecKey = EVP_PKEY_get1_EC_KEY (pkey);
+      if (ecKey)
+      {
+        auto group = EC_KEY_get0_group (ecKey);
+        if (group)
         {
-          EC_KEY * ecKey = EVP_PKEY_get1_EC_KEY (pkey);
-          if (ecKey)
+          int curve = EC_GROUP_get_curve_name (group);
+          if (curve == NID_X9_62_prime256v1)
           {
-            auto group = EC_KEY_get0_group (ecKey);
-            if (group)
-            {
-              int curve = EC_GROUP_get_curve_name (group);
-              if (curve == NID_X9_62_prime256v1)
-  						{
-                uint8_t signingKey[64];
-                BIGNUM * x = BN_new(), * y = BN_new();
-                EC_POINT_get_affine_coordinates_GFp (group,
-										EC_KEY_get0_public_key (ecKey), x, y, NULL);
-                bn2buf (x, signingKey, 32);
-                bn2buf (y, signingKey + 32, 32);
-                BN_free (x); BN_free (y);
-                verifier = std::make_shared<ECDSAP256Verifier>(signingKey);
-              }
-            }
-            EC_KEY_free (ecKey);
+            uint8_t signingKey[64];
+            BIGNUM * x = BN_new(), * y = BN_new();
+            EC_POINT_get_affine_coordinates_GFp (group,
+            EC_KEY_get0_public_key (ecKey), x, y, NULL);
+            bn2buf (x, signingKey, 32);
+            bn2buf (y, signingKey + 32, 32);
+            BN_free (x); BN_free (y);
+            verifier = std::make_shared<ECDSAP256Verifier>(signingKey);
           }
         }
-      
-      default:
-        break;
+        EC_KEY_free (ecKey);
       }
       EVP_PKEY_free (pkey);
     }
-    SSL_free (ssl);			
+    SSL_free (ssl);
   }
   SSL_CTX_free (ctx);
   return verifier;
@@ -100,44 +91,44 @@ static bool CreateFamilySignature (const std::string& family, const IdentHash& i
   SSL_CTX * ctx = SSL_CTX_new (TLSv1_method ());
   int ret = SSL_CTX_use_PrivateKey_file (ctx, filename.c_str (), SSL_FILETYPE_PEM); 
   if (ret)
-		{
-			SSL * ssl = SSL_new (ctx);
-			EVP_PKEY * pkey = SSL_get_privatekey (ssl);
-			EC_KEY * ecKey = EVP_PKEY_get1_EC_KEY (pkey);
-			if (ecKey)
+  {
+    SSL * ssl = SSL_new (ctx);
+    EVP_PKEY * pkey = SSL_get_privatekey (ssl);
+    EC_KEY * ecKey = EVP_PKEY_get1_EC_KEY (pkey);
+    if (ecKey)
+    {
+      auto group = EC_KEY_get0_group (ecKey);
+      if (group)
+      {
+        int curve = EC_GROUP_get_curve_name (group);
+        if (curve == NID_X9_62_prime256v1)
         {
-          auto group = EC_KEY_get0_group (ecKey);
-          if (group)
-            {
-              int curve = EC_GROUP_get_curve_name (group);
-              if (curve == NID_X9_62_prime256v1)
-                {
-                  uint8_t signingPrivateKey[32], buf[50], signature[64];
-                  bn2buf (EC_KEY_get0_private_key (ecKey), signingPrivateKey, 32);
-                  ECDSAP256Signer signer (signingPrivateKey);
-                  size_t len = family.length ();
-                  memcpy (buf, family.c_str (), len);
-                  memcpy (buf + len, (const uint8_t *)ident, 32);
-                  len += 32;
-                  signer.Sign (buf, len, signature);
-                  len = Base64EncodingBufferSize (64);
-                  char * b64 = new char[len+1];
-                  len = ByteStreamToBase64 (signature, 64, b64, len);
-                  b64[len] = 0;
-                  sig = b64;
-                  delete[] b64;
-                }
-              else
-                return false;
-            }	
-        }	
-			SSL_free (ssl);		
-		}	
+          uint8_t signingPrivateKey[32], buf[50], signature[64];
+          bn2buf (EC_KEY_get0_private_key (ecKey), signingPrivateKey, 32);
+          ECDSAP256Signer signer (signingPrivateKey);
+          size_t len = family.length ();
+          memcpy (buf, family.c_str (), len);
+          memcpy (buf + len, (const uint8_t *)ident, 32);
+          len += 32;
+          signer.Sign (buf, len, signature);
+          len = Base64EncodingBufferSize (64);
+          char * b64 = new char[len+1];
+          len = ByteStreamToBase64 (signature, 64, b64, len);
+          b64[len] = 0;
+          sig = b64;
+          delete[] b64;
+        }
+        else
+          return false;
+      }
+    }
+    SSL_free (ssl);
+  }
   else
     return false;
-  SSL_CTX_free (ctx);	
+  SSL_CTX_free (ctx);
   return true;
-}	
+}
 
 int main(int argc, char * argv[])
 {
