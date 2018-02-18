@@ -234,7 +234,6 @@ int main (int argc, char * argv[])
 		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072:
 		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096:
 		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_TC26_A_512_GOSTR3411_512:
-		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_TC26_A_512_GOSTR3411_512_TEST:
 		std::cout << "Sorry, i don't can generate adress for this signature type" << std::endl;
 		return 0;
 		break;
@@ -259,7 +258,6 @@ int main (int argc, char * argv[])
 			MutateByte=320;
 		break;
 		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256:
-		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256_TEST:
 		break;
 	}
 
