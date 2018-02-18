@@ -73,7 +73,7 @@ clean-obj:
 	rm -f $(OBJECTS)
 
 clean-bin:
-	rm -f keyinfo keygen famtool regaddr routerinfo
+	rm -f keyinfo keygen famtool regaddr routerinfo vain
 
 clean: clean-i2pd clean-obj clean-bin
 
