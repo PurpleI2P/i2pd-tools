@@ -167,8 +167,9 @@ class I2pdctl(object):
 
 def main():
     URL = os.getenv("I2PCONTROL_URL", "https://127.0.0.1:7650/")
+    PASSWORD = os.getenv("I2PCONTROL_PASSWORD", "itoopie")
 
-    ctl = I2pdctl(I2PControl(URL))
+    ctl = I2pdctl(I2PControl(URL, PASSWORD))
 
     parser = argparse.ArgumentParser()
 
