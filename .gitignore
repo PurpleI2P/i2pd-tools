@@ -9,6 +9,9 @@
 keygen
 keyinfo
 famtool
+regaddr
+routerinfo
+vain
 
 # private key files
 *.dat
