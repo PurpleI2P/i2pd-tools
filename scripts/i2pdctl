@@ -92,12 +92,12 @@ class I2pdctl(object):
     def execute(self, args):
         """Execute raw method"""
         try:
-            arguments =  json.loads(args.arguments)
+            parameters =  json.loads(args.parameters)
         except json.decoder.JSONDecodeError:
-            print("Error: arguments should be a valid JSON object")
+            print("Error: parameters should be a valid JSON object")
             return
 
-        resp = self.ctl.request(args.method, arguments)
+        resp = self.ctl.request(args.method, parameters)
 
         if args.json_output:
             print(resp.text)
