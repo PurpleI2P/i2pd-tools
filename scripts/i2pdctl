@@ -4,6 +4,7 @@ import json
 import logging
 import pprint
 import argparse
+import datetime
 
 try:
     import requests
@@ -55,6 +56,20 @@ STATUS = [
     "ERROR_NO_ACTIVE_PEERS_CHECK_CONNECTION_AND_FIREWALL",
     "ERROR_UDP_DISABLED_AND_TCP_UNSET",
 ]
+
+SUFFIXES = ['B','KB','MB','GB','TB']
+
+def humanize_size(size, precision=2):
+    """Bytes to human readable size"""
+    suffixIndex = 0
+    while size > 1024:
+        suffixIndex += 1
+        size = size / 1024.0
+    return "{}{}".format(round(size ,precision), SUFFIXES[suffixIndex])
+
+def humanize_time(milliseconds):
+    """Seconds to human readable time"""
+    return str(datetime.timedelta(milliseconds=milliseconds))
 
 class I2PControl(object):
     """Talk to I2PControl API"""
@@ -132,15 +147,16 @@ class I2pdctl(object):
             csi_res = False
 
         fancy_title("Router info")
-        print("Uptime: {}".format(ri_res["i2p.router.uptime"]))
+        print("Uptime: {}".format(
+            humanize_time(int(ri_res["i2p.router.uptime"]))))
         print("Status: {}".format(STATUS[ri_res["i2p.router.net.status"]]))
         print("Tunnel creation success rate: {}%".format(
             ri_res["i2p.router.net.tunnels.successrate"]))
         print("Received: {} ({} B/s)  /  Sent: {} ({} B/s)".format(
-            ri_res["i2p.router.net.total.received.bytes"],
-            ri_res["i2p.router.net.bw.inbound.1s"],
-            ri_res["i2p.router.net.total.sent.bytes"],
-            ri_res["i2p.router.net.bw.outbound.1s"]))
+            humanize_size(int(ri_res["i2p.router.net.total.received.bytes"])),
+            humanize_size(int(ri_res["i2p.router.net.bw.inbound.1s"])),
+            humanize_size(int(ri_res["i2p.router.net.total.sent.bytes"])),
+            humanize_size(int(ri_res["i2p.router.net.bw.outbound.1s"]))))
         print("Known routers: {}  /  Active: {}".format(
             ri_res["i2p.router.netdb.knownpeers"],
             ri_res["i2p.router.netdb.activepeers"]))
