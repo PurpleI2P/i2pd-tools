@@ -55,7 +55,7 @@ regaddr: $(OBJECTS)
 	$(CXX) -o regaddr regaddr.o $(LDFLAGS) $(LIBS) 
 
 vain: $(OBJECTS)
-	$(CXX) -o vain vanitygen.o $(LDFLAGS) -mavx $(LIBS)
+	$(CXX) -o vain vanitygen.o $(LDFLAGS) $(LIBS)
 
 i2pbase64: $(OBJECTS)
 	$(CXX) -o i2pbase64 i2pbase64.o $(LDFALGS) $(LIBS)
