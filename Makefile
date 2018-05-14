@@ -24,7 +24,7 @@ LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(B
 ifeq ($(UNAME),Linux)
 	LIBS += -lrt -lpthread
 else ifeq ($(UNAME),FreeBSD)
-	FLAGS += -lrt -lpthread
+	LIBS += -lthr -lpthread
 	LDFLAGS += -L/usr/local/lib 
 	INCFLAGS += -I/usr/local/include
 else
