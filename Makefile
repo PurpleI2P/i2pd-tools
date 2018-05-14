@@ -3,7 +3,7 @@ UNAME = $(shell uname -s)
 I2PD_PATH = i2pd
 LIBI2PD_PATH = $(I2PD_PATH)/libi2pd
 LIBI2PD_CLIENT_PATH = $(I2PD_PATH)/libi2pd_client
-CXX = g++
+CXX ?= g++
 FLAGS = -Wall -std=c++11 -Wno-misleading-indentation
 
 ifeq ($(UNAME),Linux)
