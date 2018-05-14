@@ -8,6 +8,8 @@ FLAGS = -Wall -std=c++11 -Wno-misleading-indentation
 
 ifeq ($(UNAME),Linux)
 	FLAGS += -g
+else ifeq ($(UNAME),FreeBSD)
+	FLAGS += -g
 else
 # Win32
 	FLAGS += -Os -D_MT -DWIN32 -D_WINDOWS -DWIN32_LEAN_AND_MEAN
@@ -16,11 +18,14 @@ endif
 
 INCFLAGS = -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH) -I$(I2PD_PATH)
 CXXFLAGS = $(FLAGS)
-LDFLAGS = -Wl,-rpath,/usr/local/lib
+LDFLAGS = 
 LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lz
 
 ifeq ($(UNAME),Linux)
 	LIBS += -lrt -lpthread
+else ifeq ($(UNAME),FreeBSD)
+	FLAGS += -lrt -lpthread
+	LDFLAGS += -Wl,-rpath,/usr/local/lib
 else
 # Win32
 	LIBS += -lws2_32 -lwsock32 -lgdi32 -liphlpapi -lstdc++ -lpthread
@@ -32,25 +37,28 @@ OBJECTS = $(SOURCES:.cpp=.o)
 I2PD_LIB = libi2pd.a
 
 
-all: keygen keyinfo famtool routerinfo regaddr vain
+all: keygen keyinfo famtool routerinfo regaddr vain i2pbase64
 
 routerinfo: $(OBJECTS)
-	$(CXX) -o routerinfo routerinfo.o $(LDFLAGS) $(LIBS)
+	$(CXX) -o routerinfo routerinfo.o $(LDFLAGS)  $(LIBS)
 
 keygen: $(OBJECTS)
-	$(CXX) -o keygen keygen.o $(LDFLAGS) $(LIBS)
+	$(CXX) -o keygen keygen.o $(LDFLAGS)  $(LIBS)
 
 keyinfo: $(OBJECTS)
-	$(CXX) -o keyinfo keyinfo.o $(LDFLAGS) $(LIBS)
+	$(CXX) -o keyinfo keyinfo.o $(LDFLAGS) $(LIBS) 
 
 famtool: $(OBJECTS)
-	$(CXX) -o famtool famtool.o $(LDFLAGS) $(LIBS)
+	$(CXX) -o famtool famtool.o $(LDFLAGS) $(LIBS) 
 
 regaddr: $(OBJECTS)
-	$(CXX) -o regaddr regaddr.o $(LDFLAGS) $(LIBS)
+	$(CXX) -o regaddr regaddr.o $(LDFLAGS) $(LIBS) 
 
 vain: $(OBJECTS)
 	$(CXX) -o vain vanitygen.o $(LDFLAGS) $(LIBS)
+
+i2pbase64: $(OBJECTS)
+	$(CXX) -o i2pbase64 i2pbase64.o $(LDFALGS) $(LIBS)
 
 $(OBJECTS): libi2pd.a
 
@@ -73,7 +81,8 @@ clean-obj:
 	rm -f $(OBJECTS)
 
 clean-bin:
-	rm -f keyinfo keygen famtool regaddr routerinfo vain
+	rm -f keyinfo keygen famtool regaddr routerinfo i2pbase64 vain
+
 
 clean: clean-i2pd clean-obj clean-bin
 
