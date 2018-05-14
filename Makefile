@@ -25,7 +25,7 @@ ifeq ($(UNAME),Linux)
 	LIBS += -lrt -lpthread
 else ifeq ($(UNAME),FreeBSD)
 	FLAGS += -lrt -lpthread
-	LDFLAGS += -Wl,-rpath,/usr/local/lib
+	LDFLAGS += -L/usr/local/lib
 else
 # Win32
 	LIBS += -lws2_32 -lwsock32 -lgdi32 -liphlpapi -lstdc++ -lpthread
