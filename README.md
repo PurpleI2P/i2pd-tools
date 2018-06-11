@@ -84,7 +84,7 @@ Vanity generation adress.
 
 #### Usage
 
-./vain privatekey.dat prefix <threads> <signature>
+./vain --usage
 
 #### Time to Generate on a 2.70GHz Processor
 | characters| time to generate (approx.) |

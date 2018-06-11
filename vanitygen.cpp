@@ -225,7 +225,7 @@ void usaging(void){
 	"--signature -s (signature type)\n"
 	"-o --output output file(default private.dat)\n"
 	"--usage usaging\n"
-	"--prefix -p\n"
+	//"--prefix -p\n"
 	"";
 	puts(help);
 }
