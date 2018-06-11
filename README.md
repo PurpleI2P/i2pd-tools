@@ -17,14 +17,27 @@ Notice: git submodules are used so make sure to clone this repository recursivel
 * libssl
 
 ```bash
-sudo apt-get install \
-    libboost-chrono-dev \
+
+depend="libboost-chrono-dev \
     libboost-date-time-dev \
     libboost-filesystem-dev \
     libboost-program-options-dev \
     libboost-system-dev \
     libboost-thread-dev \
-    libssl-dev
+    libssl-dev"
+kernel=`uname -a`
+
+case "$kernel" in
+*ubuntu*)
+	sudo apt install $depend;;
+*debian*)
+	sudo aptitude install $depend;;
+*gentoo*)
+	sudo emerge --deep --newuse dev-libs/boost dev-libs/openssl;;
+
+*)
+	echo "Just install libboost and libopenssl dev packages on your pc";;
+esac
 ```
 
 ### Building
