@@ -33,15 +33,6 @@ sudo apt-get install \
 
 ## Tools included
 
-### baddiefinder
-
-i2p netdb blocklist generator tool
-
-#### Usage
-
-see [here](baddiefinder)
-
-
 ### routerinfo
 
 print information about a router info file
