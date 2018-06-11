@@ -217,14 +217,14 @@ Orignal is sensei of crypto ;)
 
 
 
-void usaging(void){
+void usage(void){
 	const constexpr char * help="vain pattern [options]\n"
 	"-h --help help menu\n"
 	"-r --reg  regexp instead just text pattern\n"
 	"--threads -t (default count of system)\n"
 	"--signature -s (signature type)\n"
 	"-o --output output file(default private.dat)\n"
-	"--usage usaging\n"
+	"--usage usage\n"
 	//"--prefix -p\n"
 	"";
 	puts(help);
@@ -248,11 +248,11 @@ void parsing(int argc, char ** args){
 		switch(c){
 			case 0:
 				if ( std::string(long_options[option_index].name) == std::string("usage") ){
-					usaging();
+					usage();
 					exit(1);
 				}
 			case 'h':
-				usaging();
+				usage();
 				exit(0);
 				break;
 			case 'r':
@@ -285,7 +285,7 @@ int main (int argc, char * argv[])
 
 	if ( argc < 2 )
 	{
-		usaging();
+		usage();
 		return 0;
 	}
 	parsing( argc > 2 ? argc-1 : argc, argc > 2 ? argv+1 : argv);
