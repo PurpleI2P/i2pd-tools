@@ -288,7 +288,7 @@ int main (int argc, char * argv[])
 		usaging();
 		return 0;
 	}
-	parsing(argc-1, argv+1);
+	parsing( argc > 2 ? argc-1 : argc, argc > 2 ? argv+1 : argv);
 	//
 	if(!options.reg && !check_prefix( argv[1] ))
 	{
