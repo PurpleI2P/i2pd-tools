@@ -1,4 +1,17 @@
 #include "vanity.hpp"
+#include<regex.h>
+#include<getopt.h>
+
+
+static struct{
+        bool reg=false;
+        int threads=-1;
+        i2p::data::SigningKeyType signature;
+        std::string outputpath="";
+        regex_t regex;
+
+}options;
+
 
 static void inline CalculateW (const uint8_t block[64], uint32_t W[64])
 {
@@ -8,7 +21,7 @@ implementation of orignal
 	for (int i = 0; i < 16; i++)
 #ifdef _WIN32
 		W[i] = htobe32(((uint32_t *)(block))[i]);
-#else
+#else // from big endian to little endian ( swap )
 		W[i] = be32toh(((uint32_t *)(block))[i]);
 #endif
 
@@ -99,8 +112,17 @@ static inline size_t ByteStreamToBase32 (const uint8_t * inBuf, size_t len, char
 	return ret;
 }
 
+static inline bool NotThat(const char * what, const regex_t * reg){
+	int ret =  regexec(reg, what, 0, 0, 0);
+	if( ret == REG_NOMATCH ) return true;
+	else if(ret == 0) return false;
+	std::cerr << "Some error in regexping" << std::endl;
+	exit(2);
+}
+
 static inline bool NotThat(const char * a, const char *b)
 {
+
 	while(*b)
 		if(*a++!=*b++)
 			return true;
@@ -163,16 +185,21 @@ Orignal is sensei of crypto ;)
 			hash[j] = htobe32(state1[j]);
 		ByteStreamToBase32 ((uint8_t*)hash, 32, addr, len);
 		//	std::cout << addr << std::endl;
-		if(!NotThat(addr,prefix))
+
+		//bool result = options.reg ? !NotThat(addr, &options.regex) : !NotThat(addr,prefix);
+
+		if(	( options.reg ? !NotThat(addr, &options.regex) : !NotThat(addr,prefix) ) )
+//		if(result)
 		{
-			ByteStreamToBase32 ((uint8_t*)hash, 32, addr, 52);
+		 	ByteStreamToBase32 ((uint8_t*)hash, 32, addr, 52);
 			std::cout << "Address found " << addr << " in " << id_thread << std::endl;
 			found=true;
 			FoundNonce=*nonce;
-		//	free(hash);
-		//	free(b);
-			return true;
-		}
+		 //	free(hash);
+		 //	free(b);
+		 	return true;
+		 }
+
 
 		(*nonce)++;
 		hashescounter++;
@@ -186,38 +213,100 @@ Orignal is sensei of crypto ;)
 	return true;
 }
 
+
+
+
+
+void usaging(void){
+	const constexpr char * help="vain pattern [options]\n"
+	"-h --help help menu\n"
+	"-r --reg  regexp instead just text pattern\n"
+	"--threads -t (default count of system)\n"
+	"--signature -s (signature type)\n"
+	"-o --output output file(default private.dat)\n"
+	"--usage usaging\n"
+	"--prefix -p\n"
+	"";
+	puts(help);
+}
+
+
+void parsing(int argc, char ** args){
+	int option_index;
+	static struct option long_options[]={
+		{"help",no_argument,0,'h'},
+		{"reg", no_argument,0,'r'},
+		{"threads", required_argument, 0, 't'},
+		{"signature", required_argument,0,'s'},
+		{"output", required_argument,0,'o'},
+		{"usage", no_argument,0,0},
+		{0,0,0,0}
+	};
+
+	int c;
+	while( (c=getopt_long(argc,args, "hrt:s:o:", long_options, &option_index))!=-1){
+		switch(c){
+			case 0:
+				if ( std::string(long_options[option_index].name) == std::string("usage") ){
+					usaging();
+					exit(1);
+				}
+			case 'h':
+				usaging();
+				exit(0);
+				break;
+			case 'r':
+				options.reg=true;
+				break;
+			case 't':
+				options.threads=atoi(optarg);
+				break;
+			case 's':
+				options.signature = NameToSigType(std::string(optarg));
+				break;
+			case 'o':
+				options.outputpath=optarg;
+				break;
+			case '?':
+				std::cerr << "Undefined argument" << std::endl;
+			default:
+				std::cerr << args[0] << " --usage / --help" << std::endl;
+				exit(1);
+				break;
+		}
+	}
+}
+
 int main (int argc, char * argv[])
 {
-	if ( argc < 3 )
+
+
+	
+
+	if ( argc < 2 )
 	{
-		std::cout << "Usage: " << argv[0] << " filename generatestring <threads(default of system)> <signature type>" << std::endl;
+		usaging();
 		return 0;
 	}
-	if(!check_prefix(argv[2]))
+	parsing(argc-1, argv+1);
+	//
+	if(!options.reg && !check_prefix( argv[1] ))
 	{
-		std::cout << "Not correct prefix" << std::endl;
-		return 0;
-	}
-	i2p::crypto::InitCrypto (false);
-	type = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
-	if ( argc > 3 )
-	{
-		unsigned int tmp = atoi(argv[3]);
-		if(tmp > 255)
-		{
-			std::cout << "Really more than 255 threads?:D Nope, sorry" << std::endl;
-			return 0;
+		std::cout << "Not correct prefix(just string)" << std::endl;
+		return 1;
+	}else{
+		int ret = regcomp( &options.regex, argv[1], REG_EXTENDED );
+		if( ret != 0 ){
+			std::cerr << "Can't create regexp pattern from " << argv[1] << std::endl;
+			return 1;
 		}
-		count_cpu=atoi(argv[3]);
-	}
-	if ( argc > 4 )
-	{
-		type = NameToSigType(std::string(argv[4]));
 	}
 
+	i2p::crypto::InitCrypto (false);
+	options.signature = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
 ///////////////
 //For while
-	if(type != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519)
+	if(options.signature != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519)
 	{
 		std::cout << "For a while only ED25519-SHA512" << std::endl;
 		return 0;
@@ -225,8 +314,8 @@ int main (int argc, char * argv[])
 ///////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	auto keys = i2p::data::PrivateKeys::CreateRandomKeys (type);
-	switch(type)
+	auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
+	switch(options.signature)
 	{
 		case i2p::data::SIGNING_KEY_TYPE_DSA_SHA1:
 		case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA512_P521:
@@ -240,7 +329,7 @@ int main (int argc, char * argv[])
 	}
 
 //TODO: for other types.
-	switch(type)
+	switch(options.signature)
 	{
 		case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA256_P256:
 		break;
@@ -264,40 +353,40 @@ int main (int argc, char * argv[])
 	KeyBuf = new uint8_t[keys.GetFullLen()];
 	keys.ToBuffer (KeyBuf, keys.GetFullLen ());
 
-	if(!count_cpu)
+	if(options.threads <= 0)
 	{
 #if defined(WIN32)
 		SYSTEM_INFO siSysInfo;
 		GetSystemInfo(&siSysInfo);
-		count_cpu = siSysInfo.dwNumberOfProcessors;
+		options.threads = siSysInfo.dwNumberOfProcessors;
 #elif defined(_SC_NPROCESSORS_CONF)
-		count_cpu = sysconf(_SC_NPROCESSORS_CONF);
+		options.threads = sysconf(_SC_NPROCESSORS_CONF);
 #elif defined(HW_NCPU)
 		int req[] = { CTL_HW, HW_NCPU };
-		size_t len = sizeof(count_cpu);
-		v = sysctl(req, 2, &count_cpu, &len, NULL, 0);
+		size_t len = sizeof(options.threads);
+		v = sysctl(req, 2, &options.threads, &len, NULL, 0);
 #else
-		count_cpu = 4;
+		options.threads = 1;
 #endif
 	}
 
-	std::cout << "Start vanity generator in " << count_cpu << " threads" << std::endl;
+	std::cout << "Start vanity generator in " << options.threads << " threads" << std::endl;
 
 	unsigned short attempts = 0;
 	while(!found)
 	{//while
 		{//stack(for destructors(vector/thread))
 
-			std::vector<std::thread> threads(count_cpu);
+			std::vector<std::thread> threads(options.threads);
 			unsigned long long thoughtput = 0x4F4B5A37;
 
-			for ( unsigned int j = count_cpu;j--;)
+			for ( unsigned int j = options.threads;j--;)
 			{
-				threads[j] = std::thread(thread_find,KeyBuf,argv[2],j,thoughtput);
+				threads[j] = std::thread(thread_find,KeyBuf,argv[1],j,thoughtput);
 				thoughtput+=1000;
 			}//for
 
-			for(unsigned int j = 0; j < count_cpu;j++)
+			for(unsigned int j = 0; j < (unsigned int)options.threads;j++)
 				threads[j].join();
 
 			if(FoundNonce == 0)
@@ -312,16 +401,21 @@ int main (int argc, char * argv[])
 	memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
 	std::cout << "Hashes: " << hashescounter << std::endl;
 
-	std::ofstream f (argv[1], std::ofstream::binary | std::ofstream::out);
+	if(options.outputpath.size() == 0) options.outputpath="private.dat";
+
+	std::ofstream f (options.outputpath, std::ofstream::binary | std::ofstream::out);
 	if (f)
 	{
 		f.write ((char *)KeyBuf, keys.GetFullLen ());
 		delete [] KeyBuf;
 	}
 	else
-		std::cout << "Can't create file " << argv[1] << std::endl;
+		std::cout << "Can't create file " << options.outputpath << std::endl;
 
 	i2p::crypto::TerminateCrypto ();
 
 	return 0;
 }
+
+
+//

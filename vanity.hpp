@@ -39,7 +39,7 @@
 	W[i] + k)
 
 
-static i2p::data::SigningKeyType type;
+//static i2p::data::SigningKeyType type;
 //static i2p::data::PrivateKeys keys;
 static bool found=false;
 
