@@ -1,5 +1,5 @@
 #include "vanity.hpp"
-#include<regex.h>
+#include<regex>
 #include<getopt.h>
 
 
@@ -8,7 +8,7 @@ static struct{
         int threads=-1;
         i2p::data::SigningKeyType signature;
         std::string outputpath="";
-        regex_t regex;
+        std::regex regex;
 
 }options;
 
@@ -112,17 +112,12 @@ static inline size_t ByteStreamToBase32 (const uint8_t * inBuf, size_t len, char
 	return ret;
 }
 
-static inline bool NotThat(const char * what, const regex_t * reg){
-	int ret =  regexec(reg, what, 0, 0, 0);
-	if( ret == REG_NOMATCH ) return true;
-	else if(ret == 0) return false;
-	std::cerr << "Some error in regexping" << std::endl;
-	exit(2);
+static inline bool NotThat(const char * what, const std::regex & reg){
+	return std::regex_match(what,reg) == 1 ? false : true;
 }
 
 static inline bool NotThat(const char * a, const char *b)
 {
-
 	while(*b)
 		if(*a++!=*b++)
 			return true;
@@ -188,7 +183,7 @@ Orignal is sensei of crypto ;)
 
 		//bool result = options.reg ? !NotThat(addr, &options.regex) : !NotThat(addr,prefix);
 
-		if(	( options.reg ? !NotThat(addr, &options.regex) : !NotThat(addr,prefix) ) )
+		if(	( options.reg ? !NotThat(addr, options.regex) : !NotThat(addr,prefix) ) )
 //		if(result)
 		{
 		 	ByteStreamToBase32 ((uint8_t*)hash, 32, addr, 52);
@@ -295,11 +290,12 @@ int main (int argc, char * argv[])
 		std::cout << "Not correct prefix(just string)" << std::endl;
 		return 1;
 	}else{
-		int ret = regcomp( &options.regex, argv[1], REG_EXTENDED );
-		if( ret != 0 ){
-			std::cerr << "Can't create regexp pattern from " << argv[1] << std::endl;
-			return 1;
-		}
+		options.regex=std::regex(argv[1]);
+//		int ret = regcomp( &options.regex, argv[1], REG_EXTENDED );
+//		if( ret != 0 ){
+//			std::cerr << "Can't create regexp pattern from " << argv[1] << std::endl;
+//			return 1;
+//		}
 	}
 
 	i2p::crypto::InitCrypto (false);
