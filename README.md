@@ -127,3 +127,16 @@ Print just the b32 address for this key
 Print all info about the public key
 
     ./keyinfo -v privatekey.dat
+
+### regaddr_3ld
+
+Generate authentication string for stats.i2p in 3 steps
+
+#### 
+
+    ./regaddr_3ld step1 sub_domain.dat sub.domain.i2p > step1.txt
+    ./regaddr_3ld step2 step1.txt domain.dat domain.i2p > step2.txt
+    ./regaddr_3ld step3 step2.txt sub_domain.dat > step3.txt
+    cat step3.txt
+
+Send output from step3 to http://stats.i2p/i2p/addkey.html to register subdomain on stats.i2p
