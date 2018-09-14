@@ -8,6 +8,8 @@ FLAGS = -Wall -std=c++11 -Wno-misleading-indentation
 
 ifeq ($(UNAME),Linux)
 	FLAGS += -g
+else ifeq ($(UNAME),Darwin)
+	FLAGS += -g
 else ifeq ($(UNAME),FreeBSD)
 	FLAGS += -g
 else
@@ -23,6 +25,10 @@ LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(B
 
 ifeq ($(UNAME),Linux)
 	LIBS += -lrt -lpthread
+else ifeq ($(UNAME),Darwin)
+	LIBS += -lpthread
+	LDFLAGS += -L/usr/local/opt/openssl@1.1/lib -L/usr/local/lib 
+	INCFLAGS += -I/usr/local/opt/openssl@1.1/include -I/usr/local/include
 else ifeq ($(UNAME),FreeBSD)
 	LIBS += -lthr -lpthread
 	LDFLAGS += -L/usr/local/lib 
