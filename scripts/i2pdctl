@@ -1,20 +1,13 @@
 #!/usr/bin/env python3
 import os
 import json
-import logging
 import pprint
 import argparse
 import datetime
-
-try:
-    import requests
-except ImportError:
-    print("Error: requests module is required. apt install python3-requests")
-    exit(1)
-
-# Disabling annoying warnings
-requests.packages.urllib3.disable_warnings(
-        requests.packages.urllib3.exceptions.InsecureRequestWarning)
+import ssl
+import urllib.request
+import urllib.parse
+import urllib.error
 
 INFO_METHODS = {
     "RouterInfo": {
@@ -71,6 +64,12 @@ def humanize_time(milliseconds):
     """Seconds to human readable time"""
     return str(datetime.timedelta(milliseconds=milliseconds))
 
+def do_post(url, data):
+    req = urllib.request.Request(url, data=data.encode())
+    with urllib.request.urlopen(req, context=ssl._create_unverified_context()) as f:
+        resp = f.read().decode('utf-8')
+    return json.loads(resp)
+
 class I2PControl(object):
     """Talk to I2PControl API"""
 
@@ -83,20 +82,17 @@ class I2PControl(object):
     def token(self):
         """Cached authentication token"""
         if not self._token:
-            self._token = requests.post(self.url,
+            self._token = do_post(self.url,
                 json.dumps({'id': 1, 'method': 'Authenticate', 
                     'params': {'API': 1, 'Password': self.password}, 
-                    'jsonrpc': '2.0'}),
-                verify=False).json()["result"]["Token"]
+                    'jsonrpc': '2.0'}))["result"]["Token"]
         return self._token
 
     def request(self, method, params):
         """Execute authenticated request"""
-        return requests.post(self.url, 
+        return do_post(self.url, 
             json.dumps({'id': 1, 'method': method, 'params': params, 
-                'jsonrpc': '2.0', 'Token': self.token}),
-            verify=False
-        ) 
+                       'jsonrpc': '2.0', 'Token': self.token})) 
 
 class I2pdctl(object):
     """i2pd control"""
@@ -117,9 +113,9 @@ class I2pdctl(object):
         if args.json_output:
             print(resp.text)
         elif "result" in resp:
-            pprint.pprint(resp.json()["result"])
+            pprint.pprint(resp["result"])
         else:
-            pprint.pprint(resp.json())
+            pprint.pprint(resp)
 
     def raw_info(self, args):
         """Retrieve raw JSON reply from method(s)"""
@@ -130,7 +126,7 @@ class I2pdctl(object):
                     ", ".join(INFO_METHODS.keys())))
                 return
             else:
-                res[m] = self.ctl.request(m, INFO_METHODS[m]).json()['result']
+                res[m] = self.ctl.request(m, INFO_METHODS[m])['result']
 
         print(json.dumps(res))
 
@@ -140,9 +136,9 @@ class I2pdctl(object):
         def fancy_title(string):
             print("\n### {}".format(string))
             
-        ri_res  = self.ctl.request("RouterInfo", INFO_METHODS["RouterInfo"]).json()['result']
+        ri_res  = self.ctl.request("RouterInfo", INFO_METHODS["RouterInfo"])['result']
         try:
-            csi_res = self.ctl.request("ClientServicesInfo", INFO_METHODS["ClientServicesInfo"]).json()['result']
+            csi_res = self.ctl.request("ClientServicesInfo", INFO_METHODS["ClientServicesInfo"])['result']
         except KeyError:
             csi_res = False
 
@@ -210,7 +206,7 @@ def main():
     if hasattr(args, "func"):
         try:
             args.func(args)
-        except requests.exceptions.ConnectionError:
+        except urllib.error.URLError:
             print("Error: I2PControl URL is unavailable. Check your i2pd settings and network connection.")
             exit(1)
     else:
