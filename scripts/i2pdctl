@@ -90,9 +90,9 @@ class I2PControl(object):
 
     def request(self, method, params):
         """Execute authenticated request"""
-        return do_post(self.url, 
-            json.dumps({'id': 1, 'method': method, 'params': params, 
-                       'jsonrpc': '2.0', 'Token': self.token})) 
+        params['Token'] = self.token
+        return do_post(self.url, json.dumps(
+            {'id': 1, 'method': method, 'params': params, 'jsonrpc': '2.0'})) 
 
 class I2pdctl(object):
     """i2pd control"""
@@ -146,13 +146,20 @@ class I2pdctl(object):
         print("Uptime: {}".format(
             humanize_time(int(ri_res["i2p.router.uptime"]))))
         print("Status: {}".format(STATUS[ri_res["i2p.router.net.status"]]))
-        print("Tunnel creation success rate: {}%".format(
-            ri_res["i2p.router.net.tunnels.successrate"]))
-        print("Received: {} ({} B/s)  /  Sent: {} ({} B/s)".format(
-            humanize_size(int(ri_res["i2p.router.net.total.received.bytes"])),
-            humanize_size(int(ri_res["i2p.router.net.bw.inbound.1s"])),
-            humanize_size(int(ri_res["i2p.router.net.total.sent.bytes"])),
-            humanize_size(int(ri_res["i2p.router.net.bw.outbound.1s"]))))
+        if "i2p.router.net.tunnels.successrate" in ri_res:
+            print("Tunnel creation success rate: {}%".format(
+                ri_res["i2p.router.net.tunnels.successrate"]))
+
+        if "i2p.router.net.total.received.bytes" in ri_res:
+            print("Received: {} ({} B/s)  /  Sent: {} ({} B/s)".format(
+                humanize_size(int(ri_res["i2p.router.net.total.received.bytes"])),
+                humanize_size(int(ri_res["i2p.router.net.bw.inbound.1s"])),
+                humanize_size(int(ri_res["i2p.router.net.total.sent.bytes"])),
+                humanize_size(int(ri_res["i2p.router.net.bw.outbound.1s"]))))
+        else:
+            print("Received: {} B/s  /  Sent: {} B/s".format(
+                humanize_size(int(ri_res["i2p.router.net.bw.inbound.1s"])),
+                humanize_size(int(ri_res["i2p.router.net.bw.outbound.1s"]))))
         print("Known routers: {}  /  Active: {}".format(
             ri_res["i2p.router.netdb.knownpeers"],
             ri_res["i2p.router.netdb.activepeers"]))
