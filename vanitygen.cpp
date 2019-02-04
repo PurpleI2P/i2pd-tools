@@ -287,7 +287,8 @@ int main (int argc, char * argv[])
 	//
 	if(!options.reg && !check_prefix( argv[1] ))
 	{
-		std::cout << "Not correct prefix(just string)" << std::endl;
+		std::cout << "Invalid pattern." << std::endl;
+		usage();
 		return 1;
 	}else{
 		options.regex=std::regex(argv[1]);
