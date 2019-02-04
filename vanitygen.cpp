@@ -213,12 +213,12 @@ Orignal is sensei of crypto ;)
 
 
 void usage(void){
-	const constexpr char * help="vain pattern [options]\n"
-	"-h --help help menu\n"
-	"-r --reg  regexp instead just text pattern\n"
-	"--threads -t (default count of system)\n"
-	"--signature -s (signature type)\n"
-	"-o --output output file(default private.dat)\n"
+	const constexpr char * help="vain [text-pattern|regex-pattern] [options]\n"
+	"-h --help, help menu\n"
+	"-r --reg,  regexp instead just text pattern (e.g. '(one|two).*')\n"
+	"--threads -t, (default count of system)\n"
+	"--signature -s, (signature type)\n"
+	"-o --output output file (default private.dat)\n"
 	"--usage usage\n"
 	//"--prefix -p\n"
 	"";
