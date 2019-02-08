@@ -73,7 +73,8 @@ static std::shared_ptr<Verifier> LoadCertificate (const std::string& filename)
             bn2buf (x, signingKey, 32);
             bn2buf (y, signingKey + 32, 32);
             BN_free (x); BN_free (y);
-            verifier = std::make_shared<ECDSAP256Verifier>(signingKey);
+            verifier = std::make_shared<i2p::crypto::ECDSAP256Verifier>();
+			verifier->SetPublicKey (signingKey);
           }
         }
         EC_KEY_free (ecKey);
