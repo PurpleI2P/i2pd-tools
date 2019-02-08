@@ -62,6 +62,7 @@ int main(int argc, char * argv[])
     std::cout << "B32 Address: " << ident.ToBase32() << ".b32.i2p" << std::endl;
     std::cout << "Signature Type: " << SigTypeToName(dest->GetSigningKeyType()) << std::endl;
     std::cout << "Encryption Type: " << (int) dest->GetCryptoKeyType() << std::endl;
+	if (keys.IsOfflineSignature ()) std::cout << "Offline signature" << std::endl;
   } else {
     if(print_full) {
       std::cout << dest->ToBase64() << std::endl;
