@@ -50,7 +50,7 @@ static void ToUpper(std::string & str)
 /** @brief returns the signing key number given its name or -1 if there is no key of that type */
 uint16_t NameToSigType(const std::string & keyname)
 {
-  if(keyname.size() == 1) return atoi(keyname.c_str());
+  if(keyname.size() <= 2) return atoi(keyname.c_str());
 
   std::string name = keyname;
   ToUpper(name);

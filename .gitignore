@@ -13,6 +13,9 @@ i2pbase64
 regaddr
 routerinfo
 vain
+b33address
+offlinekeys
+regaddr_3ld
 
 # private key files
 *.dat
