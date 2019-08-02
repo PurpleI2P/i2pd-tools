@@ -15,7 +15,7 @@ int main(int argc, char * argv[])
 	{
 		if (ident->GetSigningKeyType () == i2p::data::SIGNING_KEY_TYPE_REDDSA_SHA512_ED25519)
 		{
-			i2p::data::BlindedPublicKey blindedKey (ident, i2p::data::SIGNING_KEY_TYPE_REDDSA_SHA512_ED25519);
+			i2p::data::BlindedPublicKey blindedKey (ident);
 			std::cout << "b33 address: " << blindedKey.ToB33 () << ".b32.i2p" << std::endl;
 			std::cout << "Today's store hash: " << blindedKey.GetStoreHash ().ToBase64 () << std::endl;	
 		}
