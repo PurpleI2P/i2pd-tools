@@ -138,6 +138,7 @@ Generate authentication string to register a domain on stats.i2p
     cat auth_string.txt
 
 Send output of auth_string to http://stats.i2p/i2p/addkey.html
+
 To register a subdomain, use [`regaddr_3ld`](#regaddr_3ld)
 
 ### regaddr_3ld
