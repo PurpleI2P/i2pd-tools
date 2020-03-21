@@ -15,6 +15,7 @@ Notice: git submodules are used so make sure to clone this repository recursivel
 * boost filesystem
 * boost program-options
 * libssl
+* zlib1g
 
 ```bash
 
@@ -24,7 +25,8 @@ depend="libboost-chrono-dev \
     libboost-program-options-dev \
     libboost-system-dev \
     libboost-thread-dev \
-    libssl-dev"
+    libssl-dev \
+    zlib1g-dev"
 kernel=`uname -a`
 
 case "$kernel" in
