@@ -15,6 +15,7 @@ Notice: git submodules are used so make sure to clone this repository recursivel
 * boost filesystem
 * boost program-options
 * libssl
+* zlib1g
 
 ```bash
 
@@ -24,7 +25,8 @@ depend="libboost-chrono-dev \
     libboost-program-options-dev \
     libboost-system-dev \
     libboost-thread-dev \
-    libssl-dev"
+    libssl-dev \
+    zlib1g-dev"
 kernel=`uname -a`
 
 case "$kernel" in
@@ -42,7 +44,7 @@ esac
 
 ### Building
 
-    make 
+    make
 
 ## Tools included
 
@@ -128,15 +130,23 @@ Print all info about the public key
 
     ./keyinfo -v privatekey.dat
 
+### regaddr
+
+Generate authentication string to register a domain on stats.i2p
+
+    ./regaddr domain.dat domain.i2p > auth_string.txt
+    cat auth_string.txt
+
+Send output of auth_string to http://stats.i2p/i2p/addkey.html
+To register a subdomain, use [`regaddr_3ld`](#regaddr_3ld)
+
 ### regaddr_3ld
 
-Generate authentication string for stats.i2p in 3 steps
-
-#### 
+Generate authentication string to register a subdomain on stats.i2p in 3 steps
 
     ./regaddr_3ld step1 sub_domain.dat sub.domain.i2p > step1.txt
     ./regaddr_3ld step2 step1.txt domain.dat domain.i2p > step2.txt
     ./regaddr_3ld step3 step2.txt sub_domain.dat > step3.txt
     cat step3.txt
 
-Send output from step3 to http://stats.i2p/i2p/addkey.html to register subdomain on stats.i2p
+Send output from step3 to http://stats.i2p/i2p/addkey.html
