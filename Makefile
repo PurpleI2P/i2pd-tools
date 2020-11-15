@@ -44,7 +44,7 @@ OBJECTS = $(SOURCES:.cpp=.o)
 I2PD_LIB = libi2pd.a
 
 
-all: keygen keyinfo famtool routerinfo regaddr regaddr_3ld vain i2pbase64 offlinekeys b33address
+all: keygen keyinfo famtool routerinfo regaddr regaddr_3ld vain i2pbase64 offlinekeys b33address regaddralias
 
 routerinfo: $(OBJECTS)
 	$(CXX) -o routerinfo routerinfo.o $(LDFLAGS)  $(LIBS)
@@ -76,6 +76,9 @@ offlinekeys: $(OBJECTS)
 b33address: $(OBJECTS)
 	$(CXX) -o b33address b33address.o $(LDFLAGS) $(LIBS)
 
+regaddralias: $(OBJECTS)
+	$(CXX) -o regaddralias regaddralias.o $(LDFLAGS) $(LIBS)
+
 $(OBJECTS): libi2pd.a
 
 .SUFFIXES:
@@ -97,7 +100,7 @@ clean-obj:
 	rm -f $(OBJECTS)
 
 clean-bin:
-	rm -f keyinfo keygen famtool regaddr regaddr_3ld routerinfo i2pbase64 vain offlinekeys b33address
+	rm -f keyinfo keygen famtool regaddr regaddr_3ld routerinfo i2pbase64 vain offlinekeys b33address changeaddr
 
 
 clean: clean-i2pd clean-obj clean-bin
