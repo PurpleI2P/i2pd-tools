@@ -299,7 +299,7 @@ int main (int argc, char * argv[])
 //		}
 	}
 
-	i2p::crypto::InitCrypto (false);
+	i2p::crypto::InitCrypto (false, true, true, false);
 	options.signature = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
 ///////////////
 //For while

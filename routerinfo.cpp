@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
 		usage(argv[0]);
 		return 1;
 	}
-	i2p::crypto::InitCrypto(false);
+	i2p::crypto::InitCrypto(false, true, true, false);
 	int opt;
 	bool ipv6 = false;
 	bool firewall = false;
@@ -75,7 +75,7 @@ int main(int argc, char * argv[])
 		i2p::data::RouterInfo ri(fname);
 		
 		std::vector<std::shared_ptr<const i2p::data::RouterInfo::Address> > addrs;
-		auto a = ri.GetNTCPAddress(!ipv6);
+		auto a = ri.GetNTCP2Address(!ipv6);
 		if(a)
 			addrs.push_back(a);
 		a = ri.GetSSUAddress(!ipv6);
