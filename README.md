@@ -151,3 +151,12 @@ Generate authentication string to register a subdomain on stats.i2p in 3 steps
     cat step3.txt
 
 Send output from step3 to http://stats.i2p/i2p/addkey.html
+
+### regaddralias
+
+Generate authentication string to register an alias address for existing domain on stats.i2p
+
+    ./regaddralias domain-oldkeys.dat domain-newkeys.i2p domain > auth_string.txt
+    cat auth_string.txt
+
+Send output of auth_string to http://stats.i2p/i2p/addkey.html
