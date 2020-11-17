@@ -44,55 +44,56 @@ OBJECTS = $(SOURCES:.cpp=.o)
 I2PD_LIB = libi2pd.a
 
 
-all: keygen keyinfo famtool routerinfo regaddr regaddr_3ld vain i2pbase64 offlinekeys b33address regaddralias
+all: $(I2PD_LIB) keygen keyinfo famtool routerinfo regaddr regaddr_3ld vain i2pbase64 offlinekeys b33address regaddralias
 
-routerinfo: $(OBJECTS)
-	$(CXX) -o routerinfo routerinfo.o $(LDFLAGS)  $(LIBS)
+routerinfo: routerinfo.o $(I2PD_LIB)
+	$(CXX) -o routerinfo routerinfo.o $(LDFLAGS) $(LIBS)
 
-keygen: $(OBJECTS)
-	$(CXX) -o keygen keygen.o $(LDFLAGS)  $(LIBS)
+keygen: keygen.o $(I2PD_LIB)
+	$(CXX) -o keygen keygen.o $(LDFLAGS) $(LIBS)
 
-keyinfo: $(OBJECTS)
-	$(CXX) -o keyinfo keyinfo.o $(LDFLAGS) $(LIBS) 
+keyinfo: keyinfo.o $(I2PD_LIB)
+	$(CXX) -o keyinfo keyinfo.o $(LDFLAGS) $(LIBS)
 
-famtool: $(OBJECTS)
-	$(CXX) -o famtool famtool.o $(LDFLAGS) $(LIBS) 
+famtool: famtool.o $(I2PD_LIB)
+	$(CXX) -o famtool famtool.o $(LDFLAGS) $(LIBS)
 
-regaddr: $(OBJECTS)
-	$(CXX) -o regaddr regaddr.o $(LDFLAGS) $(LIBS) 
+regaddr: regaddr.o $(I2PD_LIB)
+	$(CXX) -o regaddr regaddr.o $(LDFLAGS) $(LIBS)
 
-regaddr_3ld: $(OBJECTS)
-	$(CXX) -o regaddr_3ld regaddr_3ld.o $(LDFLAGS) $(LIBS) 
+regaddr_3ld: regaddr_3ld.o $(I2PD_LIB)
+	$(CXX) -o regaddr_3ld regaddr_3ld.o $(LDFLAGS) $(LIBS)
 
-vain: $(OBJECTS)
+vain: vanitygen.o $(I2PD_LIB)
 	$(CXX) -o vain vanitygen.o $(LDFLAGS) $(LIBS)
 
-i2pbase64: $(OBJECTS)
+i2pbase64: i2pbase64.o $(I2PD_LIB)
 	$(CXX) -o i2pbase64 i2pbase64.o $(LDFLAGS) $(LIBS)
 
-offlinekeys: $(OBJECTS)
+offlinekeys: offlinekeys.o $(I2PD_LIB)
 	$(CXX) -o offlinekeys offlinekeys.o $(LDFLAGS) $(LIBS)
 
-b33address: $(OBJECTS)
+b33address: b33address.o $(I2PD_LIB)
 	$(CXX) -o b33address b33address.o $(LDFLAGS) $(LIBS)
 
-regaddralias: $(OBJECTS)
+regaddralias: regaddralias.o $(I2PD_LIB)
 	$(CXX) -o regaddralias regaddralias.o $(LDFLAGS) $(LIBS)
 
-$(OBJECTS): libi2pd.a
+$(OBJECTS): $(I2PD_LIB)
 
 .SUFFIXES:
-.SUFFIXES:	.c .cc .C .cpp .o
+.SUFFIXES: .c .cc .C .cpp .o
 
 $(I2PD_LIB):
 	$(MAKE) -C $(I2PD_PATH) mk_obj_dir $(I2PD_LIB)
 
-%.o: %.cpp libi2pd.a
+%.o: %.cpp $(I2PD_LIB)
 	$(CXX) -o $@ -c $(CXXFLAGS) $(INCFLAGS) $<
 
 count:
 	wc *.c *.cc *.C *.cpp *.h *.hpp
 
+clean: clean-bin clean-obj
 clean-i2pd:
 	$(MAKE) -C $(I2PD_PATH) clean
 
@@ -108,3 +109,5 @@ clean: clean-i2pd clean-obj clean-bin
 .PHONY: all
 .PHONY: count
 .PHONY: clean
+.PHONY: clean-i2pd
+.PHONY: clean-bin

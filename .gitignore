@@ -16,6 +16,7 @@ vain
 b33address
 offlinekeys
 regaddr_3ld
+*.exe
 
 # private key files
 *.dat
