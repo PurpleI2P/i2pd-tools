@@ -18,7 +18,7 @@ static std::string address_style_string(Addr addr)
 		return "SSU";
 	}
 	return "???";
-	
+
 }
 
 template<typename Addr>
@@ -73,7 +73,7 @@ int main(int argc, char * argv[])
 		optind ++;
 		std::string fname(argv[idx]);
 		i2p::data::RouterInfo ri(fname);
-		
+
 		std::vector<std::shared_ptr<const i2p::data::RouterInfo::Address> > addrs;
 		auto a = ri.GetNTCP2Address(!ipv6);
 		if(a)
@@ -87,20 +87,20 @@ int main(int argc, char * argv[])
 		else
 			std::cout << "Router Hash: ";
 		std::cout << ri.GetIdentHashBase64() << std::endl;
-		
+
 		for (const auto & a : addrs) {
-			
+
 			if(firewall) {
 				write_firewall_entry(std::cout, a);
 			} else {
 				std::cout << address_style_string(a) << ": " << a->host;
-				
+
 				if (port)
 					std::cout << ":" << a->port;
 			}
 			std::cout << std::endl;
 		}
 	}
-	
+
 	return 0;
 }

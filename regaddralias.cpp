@@ -12,13 +12,13 @@ int main (int argc, char * argv[])
 		return -1;
 	}
 
-	i2p::crypto::InitCrypto (false, true, true, false);	
+	i2p::crypto::InitCrypto (false, true, true, false);
 
 	i2p::data::PrivateKeys oldkeys, newkeys;
 	{
 		std::ifstream s(argv[1], std::ifstream::binary);
-		if (s.is_open ())	
-		{	
+		if (s.is_open ())
+		{
 			s.seekg (0, std::ios::end);
 			size_t len = s.tellg();
 			s.seekg (0, std::ios::beg);
@@ -26,22 +26,22 @@ int main (int argc, char * argv[])
 			s.read ((char *)buf, len);
 			if(!oldkeys.FromBuffer (buf, len))
 			{
-				std::cout << "Failed to load keyfile " << argv[1] << std::endl;	
+				std::cout << "Failed to load keyfile " << argv[1] << std::endl;
 				return -1;
 			}
 			delete[] buf;
-		}	
+		}
 		else
 		{
-			std::cout << "Cab't open keyfile " << argv[1] << std::endl;	
-			return -1;	
+			std::cout << "Can't open keyfile " << argv[1] << std::endl;
+			return -1;
 		}
 	}
 
 	{
 		std::ifstream s(argv[2], std::ifstream::binary);
-		if (s.is_open ())	
-		{	
+		if (s.is_open ())
+		{
 			s.seekg (0, std::ios::end);
 			size_t len = s.tellg();
 			s.seekg (0, std::ios::beg);
@@ -49,14 +49,14 @@ int main (int argc, char * argv[])
 			s.read ((char *)buf, len);
 			if(!newkeys.FromBuffer (buf, len))
 			{
-				std::cout << "Failed to load keyfile " << argv[2] << std::endl;	
+				std::cout << "Failed to load keyfile " << argv[2] << std::endl;
 				return -1;
 			}
 			delete[] buf;
-		}		
+		}
 		else
 		{
-			std::cout << "Cab't open keyfile " << argv[2] << std::endl;	
+			std::cout << "Can't open keyfile " << argv[2] << std::endl;
 			return -1;
 		}
 	}
@@ -69,7 +69,7 @@ int main (int argc, char * argv[])
 
 	auto oldSignatureLen = oldkeys.GetPublic ()->GetSignatureLen ();
 	uint8_t * oldSignature = new uint8_t[oldSignatureLen];
-	char * oldSig = new char[oldSignatureLen*2];	
+	char * oldSig = new char[oldSignatureLen*2];
 	oldkeys.Sign ((uint8_t *)out.str ().c_str (), out.str ().length (), oldSignature);
 	auto len = i2p::data::ByteStreamToBase64 (oldSignature, oldSignatureLen, oldSig, oldSignatureLen*2);
 	oldSig[len] = 0;
@@ -79,7 +79,7 @@ int main (int argc, char * argv[])
 
 	auto signatureLen = newkeys.GetPublic ()->GetSignatureLen ();
 	uint8_t * signature = new uint8_t[signatureLen];
-	char * sig = new char[signatureLen*2];	
+	char * sig = new char[signatureLen*2];
 	newkeys.Sign ((uint8_t *)out.str ().c_str (), out.str ().length (), signature);
 	len = i2p::data::ByteStreamToBase64 (signature, signatureLen, sig, signatureLen*2);
 	sig[len] = 0;
@@ -87,7 +87,7 @@ int main (int argc, char * argv[])
 	delete[] signature;
 	delete[] sig;
 
-	std::cout << out.str () << std::endl;	
+	std::cout << out.str () << std::endl;
 
 	i2p::crypto::TerminateCrypto ();
 

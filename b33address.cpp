@@ -6,8 +6,9 @@
 #include "common/key.hpp"
 
 int main(int argc, char * argv[])
-{	
-	// base64 input, b33 and store key output, 11->11 only		
+{
+	// base64 input, b33 and store key output, 11->11 only
+	std::cout << "Waiting for base64 from stdin..." << std::endl;
 	std::string base64;
 	std::getline (std::cin, base64);
 	auto ident = std::make_shared<i2p::data::IdentityEx>();
@@ -17,14 +18,13 @@ int main(int argc, char * argv[])
 		{
 			i2p::data::BlindedPublicKey blindedKey (ident);
 			std::cout << "b33 address: " << blindedKey.ToB33 () << ".b32.i2p" << std::endl;
-			std::cout << "Today's store hash: " << blindedKey.GetStoreHash ().ToBase64 () << std::endl;	
+			std::cout << "Today's store hash: " << blindedKey.GetStoreHash ().ToBase64 () << std::endl;
 		}
 		else
-			std::cout << "Invalid signature type " << SigTypeToName (ident->GetSigningKeyType ()) << std::endl;	
+			std::cout << "Invalid signature type " << SigTypeToName (ident->GetSigningKeyType ()) << std::endl;
 	}
 	else
-		std::cout << "Invalid base64 address" << std::endl;	
+		std::cout << "Invalid base64 address" << std::endl;
 
 	return 0;
 }
-

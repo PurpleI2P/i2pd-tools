@@ -3,21 +3,21 @@
 #include<getopt.h>
 
 
-static struct{
-        bool reg=false;
-        int threads=-1;
-        i2p::data::SigningKeyType signature;
-        std::string outputpath="";
-        std::regex regex;
-
-}options;
+static struct
+{
+	bool reg=false;
+	int threads=-1;
+	i2p::data::SigningKeyType signature;
+	std::string outputpath="";
+	std::regex regex;
+} options;
 
 
 static void inline CalculateW (const uint8_t block[64], uint32_t W[64])
 {
-/*
-implementation of orignal
-*/
+/**
+ * implementation of orignal
+ */
 	for (int i = 0; i < 16; i++)
 #ifdef _WIN32
 		W[i] = htobe32(((uint32_t *)(block))[i]);
@@ -31,9 +31,9 @@ implementation of orignal
 
 static void inline TransformBlock (uint32_t state[8], const uint32_t W[64])
 {
-/*
-implementation of orignal
-*/
+/**
+ * implementation of orignal
+ */
 	uint32_t S[8];
 	memcpy(S, state, 32);
 
@@ -60,9 +60,9 @@ implementation of orignal
 
 void inline HashNextBlock (uint32_t state[8], const uint8_t * block)
 {
-/*
-implementation of orignal
-*/
+/**
+ * implementation of orignal
+ */
 	uint32_t W[64];
 	CalculateW (block, W);
 	TransformBlock (state, W);
@@ -126,11 +126,11 @@ static inline bool NotThat(const char * a, const char *b)
 
 static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread, unsigned long long throughput)
 {
-/*
-Thanks to orignal ^-^
-For idea and example ^-^
-Orignal is sensei of crypto ;)
-*/
+/**
+ * Thanks to orignal ^-^
+ * For idea and example ^-^
+ * Orignal is sensei of crypto ;)
+ */
 	std::cout << "Thread " << id_thread << " binded" << std::endl;
 /*
 	union
@@ -179,38 +179,34 @@ Orignal is sensei of crypto ;)
 		for (int j = 8; j--;)
 			hash[j] = htobe32(state1[j]);
 		ByteStreamToBase32 ((uint8_t*)hash, 32, addr, len);
-		//	std::cout << addr << std::endl;
+		// std::cout << addr << std::endl;
 
-		//bool result = options.reg ? !NotThat(addr, &options.regex) : !NotThat(addr,prefix);
+		// bool result = options.reg ? !NotThat(addr, &options.regex) : !NotThat(addr,prefix);
 
-		if(	( options.reg ? !NotThat(addr, options.regex) : !NotThat(addr,prefix) ) )
-//		if(result)
+		if( ( options.reg ? !NotThat(addr, options.regex) : !NotThat(addr,prefix) ) )
+		// if(result)
 		{
-		 	ByteStreamToBase32 ((uint8_t*)hash, 32, addr, 52);
+			ByteStreamToBase32 ((uint8_t*)hash, 32, addr, 52);
 			std::cout << "Address found " << addr << " in " << id_thread << std::endl;
 			found=true;
 			FoundNonce=*nonce;
-		 //	free(hash);
-		 //	free(b);
-		 	return true;
-		 }
+			// free(hash);
+			// free(b);
+			return true;
+		}
 
 
 		(*nonce)++;
 		hashescounter++;
 		if (found)
 		{
-	//		free(hash);
-	//		free(b);
+			// free(hash);
+			// free(b);
 			break;
 		}
-	}//while
+	} // while
 	return true;
 }
-
-
-
-
 
 void usage(void){
 	const constexpr char * help="vain [text-pattern|regex-pattern] [options]\n"
@@ -220,11 +216,10 @@ void usage(void){
 	"--signature -s, (signature type)\n"
 	"-o --output output file (default private.dat)\n"
 	"--usage usage\n"
-	//"--prefix -p\n"
+	// "--prefix -p\n"
 	"";
 	puts(help);
 }
-
 
 void parsing(int argc, char ** args){
 	int option_index;
@@ -274,10 +269,6 @@ void parsing(int argc, char ** args){
 
 int main (int argc, char * argv[])
 {
-
-
-	
-
 	if ( argc < 2 )
 	{
 		usage();
@@ -320,7 +311,7 @@ int main (int argc, char * argv[])
 		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072:
 		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096:
 		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_TC26_A_512_GOSTR3411_512:
-		std::cout << "Sorry, i don't can generate adress for this signature type" << std::endl;
+		std::cout << "Sorry, i don't can generate address for this signature type" << std::endl;
 		return 0;
 		break;
 	}
@@ -371,8 +362,8 @@ int main (int argc, char * argv[])
 
 	unsigned short attempts = 0;
 	while(!found)
-	{//while
-		{//stack(for destructors(vector/thread))
+	{ // while
+		{ // stack(for destructors(vector/thread))
 
 			std::vector<std::thread> threads(options.threads);
 			unsigned long long thoughtput = 0x4F4B5A37;
@@ -381,7 +372,7 @@ int main (int argc, char * argv[])
 			{
 				threads[j] = std::thread(thread_find,KeyBuf,argv[1],j,thoughtput);
 				thoughtput+=1000;
-			}//for
+			} // for
 
 			for(unsigned int j = 0; j < (unsigned int)options.threads;j++)
 				threads[j].join();
@@ -392,8 +383,8 @@ int main (int argc, char * argv[])
 				std::cout << "Attempts #" << ++attempts << std::endl;
 			}
 
-		}//stack
-	}//while
+		} // stack
+	} // while
 
 	memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
 	std::cout << "Hashes: " << hashescounter << std::endl;
@@ -413,6 +404,3 @@ int main (int argc, char * argv[])
 
 	return 0;
 }
-
-
-//

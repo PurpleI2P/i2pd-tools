@@ -13,7 +13,7 @@ int main (int argc, char * argv[])
 		return -1;
 	}
 	i2p::crypto::InitCrypto (false, true, true, false);
-	i2p::data::SigningKeyType type = i2p::data::SIGNING_KEY_TYPE_DSA_SHA1;	
+	i2p::data::SigningKeyType type = i2p::data::SIGNING_KEY_TYPE_DSA_SHA1;
 	if (argc > 2) {
 		std::string str(argv[2]);
 		type = NameToSigType(str);
@@ -30,7 +30,7 @@ int main (int argc, char * argv[])
 		std::cout << "Destination " << keys.GetPublic ()->GetIdentHash ().ToBase32 () << " created" << std::endl;
 	}
 	else
-		std::cout << "Can't create file " << argv[1] << std::endl;	
+		std::cout << "Can't create file " << argv[1] << std::endl;
 
 	i2p::crypto::TerminateCrypto ();
 
