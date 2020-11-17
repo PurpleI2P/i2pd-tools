@@ -1,6 +1,8 @@
 UNAME = $(shell uname -s)
 
 I2PD_PATH = i2pd
+I2PD_LIB = libi2pd.a
+
 LIBI2PD_PATH = $(I2PD_PATH)/libi2pd
 LIBI2PD_CLIENT_PATH = $(I2PD_PATH)/libi2pd_client
 CXX ?= g++
@@ -18,10 +20,10 @@ else
 	BOOST_SUFFIX = -mt
 endif
 
-INCFLAGS = -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH) -I$(I2PD_PATH)
+INCFLAGS = -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH)
 CXXFLAGS = $(FLAGS)
 LDFLAGS = 
-LIBS = $(I2PD_PATH)/libi2pd.a -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lz
+LIBS = $(I2PD_PATH)/$(I2PD_LIB) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lz
 
 ifeq ($(UNAME),Linux)
 	LIBS += -lrt -lpthread
@@ -36,13 +38,8 @@ else ifeq ($(UNAME),FreeBSD)
 else
 # Win32
 	LIBS += -lws2_32 -lwsock32 -lgdi32 -liphlpapi -lstdc++ -lpthread
-	LDFLAGS += -Wl,-Bstatic -static-libgcc -static-libstdc++
+	LDFLAGS += -s -Wl,-Bstatic -static-libgcc -static-libstdc++
 endif
-
-SOURCES = $(wildcard *.cpp)
-OBJECTS = $(SOURCES:.cpp=.o)
-I2PD_LIB = libi2pd.a
-
 
 all: $(I2PD_LIB) keygen keyinfo famtool routerinfo regaddr regaddr_3ld vain i2pbase64 offlinekeys b33address regaddralias
 
@@ -79,8 +76,6 @@ b33address: b33address.o $(I2PD_LIB)
 regaddralias: regaddralias.o $(I2PD_LIB)
 	$(CXX) -o regaddralias regaddralias.o $(LDFLAGS) $(LIBS)
 
-$(OBJECTS): $(I2PD_LIB)
-
 .SUFFIXES:
 .SUFFIXES: .c .cc .C .cpp .o
 
@@ -93,21 +88,20 @@ $(I2PD_LIB):
 count:
 	wc *.c *.cc *.C *.cpp *.h *.hpp
 
-clean: clean-bin clean-obj
 clean-i2pd:
 	$(MAKE) -C $(I2PD_PATH) clean
 
 clean-obj:
-	rm -f $(OBJECTS)
+	rm -f $(wildcard *.o)
 
 clean-bin:
-	rm -f keyinfo keygen famtool regaddr regaddr_3ld routerinfo i2pbase64 vain offlinekeys b33address changeaddr
-
+	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo vain
 
 clean: clean-i2pd clean-obj clean-bin
 
 .PHONY: all
 .PHONY: count
-.PHONY: clean
 .PHONY: clean-i2pd
+.PHONY: clean-obj
 .PHONY: clean-bin
+.PHONY: clean
