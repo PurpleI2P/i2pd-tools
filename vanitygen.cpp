@@ -73,7 +73,7 @@ static bool check_prefix(const char * buf)
 	unsigned short size_str=0;
 	while(*buf)
 	{
-		if(*buf < 48 || (*buf > 57 && *buf < 65) || (*buf > 64 && *buf < 94) || *buf > 125 || size_str > 52)
+		if(!((*buf > 49 && *buf < 56) || (*buf > 96 && *buf < 123)) || size_str > 52)
 			return false;
 		size_str++;
 		buf++;
