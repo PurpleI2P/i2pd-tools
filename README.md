@@ -69,7 +69,7 @@ Generate an i2p private key
 
 #### Usage
 
-Make a DSA-SHA1 destination key
+Make a EDDSA-SHA512-ED25519 destination key
 
     ./keygen privkey.dat
 
@@ -82,16 +82,18 @@ or
     ./keygen privkey.dat <key name>
 
 
-| key name             | number |
-| -------------------- | ------ |
-| DSA-SHA1             | 0      |
-| ECDSA-SHA256-P256    | 1      |
-| ECDSA-SHA384-P384    | 2      |
-| ECDSA-SHA512-P521    | 3      |
-| RSA-SHA256-2048      | 4      |
-| RSA-SHA384-3072      | 5      |
-| RSA-SHA512-4096      | 6      |
-| EDDSA-SHA512-ED25519 | 7      |
+| key name                             | number |
+| ------------------------------------ | ------ |
+| DSA-SHA1                             | 0      |
+| ECDSA-SHA256-P256                    | 1      |
+| ECDSA-SHA384-P384                    | 2      |
+| ECDSA-SHA512-P521                    | 3      |
+| RSA-SHA256-2048                      | 4      |
+| RSA-SHA384-3072                      | 5      |
+| RSA-SHA512-4096                      | 6      |
+| EDDSA-SHA512-ED25519                 | 7      |
+| GOSTR3410_CRYPTO_PRO_A-GOSTR3411-256 | 9      |
+| GOSTR3410_TC26_A_512-GOSTR3411-512   | 10     |
 
 ### vain
 
