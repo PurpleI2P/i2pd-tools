@@ -13,7 +13,7 @@ int main (int argc, char * argv[])
 		return -1;
 	}
 	i2p::crypto::InitCrypto (false, true, true, false);
-	i2p::data::SigningKeyType type = i2p::data::SIGNING_KEY_TYPE_DSA_SHA1;
+	i2p::data::SigningKeyType type = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
 	if (argc > 2) {
 		std::string str(argv[2]);
 		type = NameToSigType(str);
