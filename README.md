@@ -30,7 +30,7 @@ depend="libboost-chrono-dev \
 kernel=`uname -a`
 
 case "$kernel" in
-*ubuntu*)
+*Ubuntu*)
 	sudo apt install $depend;;
 *debian*)
 	sudo aptitude install $depend;;
