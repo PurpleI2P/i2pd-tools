@@ -75,9 +75,15 @@ int main(int argc, char * argv[])
 		i2p::data::RouterInfo ri(fname);
 
 		std::vector<std::shared_ptr<const i2p::data::RouterInfo::Address> > addrs;
-		auto a = ri.GetNTCP2Address(!ipv6);
+		auto a = ri.GetPublishedNTCP2V4Address();
 		if(a)
 			addrs.push_back(a);
+		if (ipv6)
+		{
+			a = ri.GetPublishedNTCP2V6Address();
+			if(a)
+				addrs.push_back(a);
+		}	
 		a = ri.GetSSUAddress(!ipv6);
 		if(a)
 			addrs.push_back(a);
