@@ -97,7 +97,7 @@ or
 
 ### vain
 
-Vanity generation adress.
+Vanity generation address.
 
 #### Usage
 
@@ -134,31 +134,31 @@ Print all info about the public key
 
 ### regaddr
 
-Generate authentication string to register a domain on stats.i2p
+Generate authentication string to register a domain on reg.i2p and stats.i2p
 
     ./regaddr domain.dat domain.i2p > auth_string.txt
     cat auth_string.txt
 
-Send output of auth_string to http://stats.i2p/i2p/addkey.html
+Send output of auth_string to http://reg.i2p/add and http://stats.i2p/i2p/addkey.html
 
 To register a subdomain, use [`regaddr_3ld`](#regaddr_3ld)
 
 ### regaddr_3ld
 
-Generate authentication string to register a subdomain on stats.i2p in 3 steps
+Generate authentication string to register a subdomain on reg.i2p and stats.i2p in 3 steps
 
     ./regaddr_3ld step1 sub_domain.dat sub.domain.i2p > step1.txt
     ./regaddr_3ld step2 step1.txt domain.dat domain.i2p > step2.txt
     ./regaddr_3ld step3 step2.txt sub_domain.dat > step3.txt
     cat step3.txt
 
-Send output from step3 to http://stats.i2p/i2p/addkey.html
+Send output of auth_string to http://reg.i2p/add and http://stats.i2p/i2p/addkey.html
 
 ### regaddralias
 
-Generate authentication string to register an alias address for existing domain on stats.i2p
+Generate authentication string to register an alias address for existing domain on reg.i2p and stats.i2p
 
     ./regaddralias domain-oldkeys.dat domain-newkeys.i2p domain > auth_string.txt
     cat auth_string.txt
 
-Send output of auth_string to http://stats.i2p/i2p/addkey.html
+Send output of auth_string to http://reg.i2p/add and http://stats.i2p/i2p/addkey.html
