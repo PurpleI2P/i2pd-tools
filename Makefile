@@ -41,7 +41,7 @@ else
 	LDFLAGS += -s -Wl,-Bstatic -static-libgcc -static-libstdc++
 endif
 
-all: $(I2PD_LIB) keygen keyinfo famtool routerinfo regaddr regaddr_3ld vain i2pbase64 offlinekeys b33address regaddralias
+all: $(I2PD_LIB) keygen keyinfo famtool routerinfo regaddr regaddr_3ld vain i2pbase64 offlinekeys b33address regaddralias x25519
 
 routerinfo: routerinfo.o $(I2PD_LIB)
 	$(CXX) -o routerinfo routerinfo.o $(LDFLAGS) $(LIBS)
@@ -75,6 +75,9 @@ b33address: b33address.o $(I2PD_LIB)
 
 regaddralias: regaddralias.o $(I2PD_LIB)
 	$(CXX) -o regaddralias regaddralias.o $(LDFLAGS) $(LIBS)
+	
+x25519: x25519.o $(I2PD_LIB)
+	$(CXX) -o x25519 x25519.o $(LDFLAGS) $(LIBS)
 
 .SUFFIXES:
 .SUFFIXES: .c .cc .C .cpp .o
@@ -95,7 +98,7 @@ clean-obj:
 	rm -f $(wildcard *.o)
 
 clean-bin:
-	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo vain
+	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo vain x25519
 
 clean: clean-i2pd clean-obj clean-bin
 
