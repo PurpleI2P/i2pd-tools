@@ -72,6 +72,7 @@ int main(int argc, char * argv[])
     std::cout << "\nPrivateKey: ";
     for (int i = 0; b64Private[i] != 0; ++i)
         std::cout << b64Private[i];
+    std::cout << std::endl;
 
     return 0;
 }
