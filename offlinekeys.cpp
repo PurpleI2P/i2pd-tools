@@ -42,6 +42,7 @@ int main (int argc, char * argv[])
 	{
 		std::string str(argv[3]);
 		type = NameToSigType(str);
+		if (SigTypeToName(type).find("unknown") != std::string::npos) { std::cerr << "Incorrect signature type" << std::endl; return -2; }
 	}
 
 	int days = 365; // 1 year by default
@@ -58,7 +59,9 @@ int main (int argc, char * argv[])
 		len = offlineKeys.ToBuffer (buf, len);
 		f.write ((char *)buf, len);
 		delete[] buf;
-		std::cout << "Offline keys for destination " << offlineKeys.GetPublic ()->GetIdentHash ().ToBase32 () << " created" << std::endl;
+		std::cout << "Offline keys for destination " << offlineKeys.GetPublic ()->GetIdentHash ().ToBase32 () << " created" << std::endl
+			<< "Signature type: " << SigTypeToName(type) << " (" << type << ")" << std::endl
+			<< "Days: " << days << std::endl;
 	}
 	else
 		std::cout << "Can't create file " << argv[1] << std::endl;
@@ -67,4 +70,3 @@ int main (int argc, char * argv[])
 
 	return 0;
 }
-
