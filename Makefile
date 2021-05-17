@@ -29,7 +29,7 @@ ifeq ($(UNAME),Linux)
 	LIBS += -lrt -lpthread
 else ifeq ($(UNAME),Darwin)
 	LIBS += -lpthread
-	LDFLAGS += -L/usr/local/opt/openssl@1.1/lib -L/usr/local/lib 
+	LDFLAGS += -L/usr/local/opt/openssl@1.1/lib -L/usr/local/lib
 	INCFLAGS += -I/usr/local/opt/openssl@1.1/include -I/usr/local/include
 else ifeq ($(UNAME),FreeBSD)
 	LIBS += -lthr -lpthread
@@ -41,7 +41,7 @@ else
 	LDFLAGS += -s -Wl,-Bstatic -static-libgcc -static-libstdc++
 endif
 
-all: $(I2PD_LIB) keygen keyinfo famtool routerinfo regaddr regaddr_3ld vain i2pbase64 offlinekeys b33address regaddralias x25519
+all: $(I2PD_LIB) keygen keyinfo famtool routerinfo regaddr regaddr_3ld vain i2pbase64 offlinekeys b33address regaddralias x25519 verifyhost
 
 routerinfo: routerinfo.o $(I2PD_LIB)
 	$(CXX) -o routerinfo routerinfo.o $(LDFLAGS) $(LIBS)
@@ -79,6 +79,9 @@ regaddralias: regaddralias.o $(I2PD_LIB)
 x25519: x25519.o $(I2PD_LIB)
 	$(CXX) -o x25519 x25519.o $(LDFLAGS) $(LIBS)
 
+verifyhost: verifyhost.o $(I2PD_LIB)
+	$(CXX) -o verifyhost verifyhost.o $(LDFLAGS) $(LIBS)
+
 .SUFFIXES:
 .SUFFIXES: .c .cc .C .cpp .o
 
@@ -98,7 +101,7 @@ clean-obj:
 	rm -f $(wildcard *.o)
 
 clean-bin:
-	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo vain x25519
+	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo vain x25519 verifyhost
 
 clean: clean-i2pd clean-obj clean-bin
 
