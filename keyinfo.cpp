@@ -1,5 +1,6 @@
 #include "Identity.h"
 #include "I2PEndian.h"
+#include "LeaseSet.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -11,7 +12,7 @@
 
 static int printHelp(const char * exe, int exitcode)
 {
-	std::cout << "usage: " << exe << " [-v] [-d] privatekey.dat" << std::endl;
+	std::cout << "usage: " << exe << " [-v] [-d] [-b] privatekey.dat" << std::endl;
 	return exitcode;
 }
 
@@ -31,8 +32,9 @@ int main(int argc, char * argv[])
 
 	int opt;
 	bool print_full = false;
+	bool print_blinded = false;
 	bool verbose = false;
-	while((opt = getopt(argc, argv, "hvd")) != -1) {
+	while((opt = getopt(argc, argv, "hvdb")) != -1) {
 		switch(opt){
 		case 'h':
 			return printHelp(argv[0], 0);
@@ -41,6 +43,9 @@ int main(int argc, char * argv[])
 			break;
 		case 'd':
 			print_full = true;
+			break;
+		case 'b':
+			print_blinded = true;
 			break;
 		default:
 			return printHelp(argv[0], -1);
@@ -94,5 +99,17 @@ int main(int argc, char * argv[])
 		} else {
 			std::cout << ident.ToBase32() << ".b32.i2p" << std::endl;
 		}
+	}
+
+	if (print_blinded) {
+		if (dest->GetSigningKeyType () == i2p::data::SIGNING_KEY_TYPE_REDDSA_SHA512_ED25519 ||
+		    dest->GetSigningKeyType () == i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519 ) // 11 or 7
+		{
+			i2p::data::BlindedPublicKey blindedKey (dest);
+			std::cout << "b33 address: " << blindedKey.ToB33 () << ".b32.i2p" << std::endl;
+			std::cout << "Today's store hash: " << blindedKey.GetStoreHash ().ToBase64 () << std::endl;
+		}
+		else
+			std::cout << "Invalid signature type " << SigTypeToName (dest->GetSigningKeyType ()) << std::endl;
 	}
 }
