@@ -17,6 +17,8 @@ vain
 b33address
 offlinekeys
 regaddr_3ld
+verifyhost
+x25519
 *.exe
 
 # private key files
