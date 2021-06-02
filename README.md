@@ -11,36 +11,18 @@ Notice: git submodules are used so make sure to clone this repository recursivel
 ### Dependencies
 
 * boost chrono
+
 * boost date-time
+
 * boost filesystem
+
 * boost program-options
+
 * libssl
+
 * zlib1g
 
-```bash
-
-depend="libboost-chrono-dev \
-    libboost-date-time-dev \
-    libboost-filesystem-dev \
-    libboost-program-options-dev \
-    libboost-system-dev \
-    libboost-thread-dev \
-    libssl-dev \
-    zlib1g-dev"
-kernel=`uname -a`
-
-case "$kernel" in
-*Ubuntu*)
-	sudo apt install $depend;;
-*debian*)
-	sudo aptitude install $depend;;
-*gentoo*)
-	sudo emerge --deep --newuse dev-libs/boost dev-libs/openssl;;
-
-*)
-	echo "Just install libboost and libopenssl dev packages on your pc";;
-esac
-```
+  (run `dependencies.sh`)
 
 ### Building
 
@@ -162,3 +144,7 @@ Generate authentication string to register an alias address for existing domain 
     cat auth_string.txt
 
 Send output of auth_string to http://reg.i2p/add and http://stats.i2p/i2p/addkey.html
+
+### x25519
+
+Generate key pair with output in base64 encoding. Now the x25519 keys are used for authentication with an encrypted LeaseSet.
