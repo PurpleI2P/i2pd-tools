@@ -11,8 +11,17 @@ static struct
 	i2p::data::SigningKeyType signature;
 	std::string outputpath="";
 	std::regex regex;
+	bool sig_type = true;
 } options;
 
+void check_sig_type()
+{
+	if (SigTypeToName(options.signature).find("unknown") != std::string::npos)
+	{
+		std::cerr << "Incorrect signature type" << std::endl;
+		options.sig_type = false;
+	}
+}
 
 static void inline CalculateW (const uint8_t block[64], uint32_t W[64])
 {
@@ -214,13 +223,12 @@ static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread
 
 void usage(void){
 	const constexpr char * help="vain [text-pattern|regex-pattern] [options]\n"
-	"-h --help, help menu\n"
-	"-r --reg,  regexp instead just text pattern (e.g. '(one|two).*')\n"
-	"--threads -t, (default count of system)\n"
-	"--signature -s, (signature type)\n"
-	"-o --output output file (default private.dat)\n"
-	"--usage usage\n"
-	// "--prefix -p\n"
+	"-h --help    help menu\n"
+	"-r --reg     regexp instead just text pattern (e.g. '(one|two).*')\n"
+	"-t --threads (default count of system)\n"
+//	"--signature -s, (signature type)\n" NOT IMPLEMENTED FUCKING PLAZ!
+	"-o --output  output file (default private.dat)\n"
+	"--usage      usage\n"
 	"";
 	puts(help);
 }
@@ -257,6 +265,7 @@ void parsing(int argc, char ** args){
 				break;
 			case 's':
 				options.signature = NameToSigType(std::string(optarg));
+				check_sig_type();
 				break;
 			case 'o':
 				options.outputpath=optarg;
@@ -306,6 +315,7 @@ int main (int argc, char * argv[])
 ///////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	if (!options.sig_type) return -2;
 	auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
 	switch(options.signature)
 	{
@@ -315,7 +325,7 @@ int main (int argc, char * argv[])
 		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072:
 		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096:
 		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_TC26_A_512_GOSTR3411_512:
-		std::cout << "Sorry, i don't can generate address for this signature type" << std::endl;
+		std::cout << "Sorry, I don't can generate address for this signature type" << std::endl;
 		return 0;
 		break;
 	}
