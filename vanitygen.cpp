@@ -228,7 +228,6 @@ void usage(void){
 	"-t --threads (default count of system)\n"
 //	"--signature -s, (signature type)\n" NOT IMPLEMENTED FUCKING PLAZ!
 	"-o --output  output file (default private.dat)\n"
-	"--usage      usage\n"
 	"";
 	puts(help);
 }
