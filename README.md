@@ -47,7 +47,7 @@ print iptables firewall rules to allow 1 nodes in netdb through firewall includi
 
 ### keygen
 
-Generate an i2p private key
+Generate an I2P private key
 
 #### Usage
 
@@ -101,7 +101,7 @@ Vanity generation address.
 
 ### keyinfo
 
-Prints information about an i2p keys
+Prints information about an I2P private key
 
 #### Usage
 
