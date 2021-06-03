@@ -200,7 +200,7 @@ static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread
 		// if(result)
 		{
 			ByteStreamToBase32 ((uint8_t*)hash, 32, addr, 52);
-			std::cout << "Address found " << addr << " in " << id_thread << std::endl;
+			std::cout << "Address found " << addr << std::endl;
 			found=true;
 			FoundNonce=*nonce;
 			// free(hash);
