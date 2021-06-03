@@ -91,17 +91,17 @@ Vanity generation address.
 #### Time to Generate on a 2.70GHz Processor
 | characters| time to generate (approx.) |
 | -------------------- | --------------- |
-|         1 	       | ~0.082s	 |
-|         2	       | ~0.075s	 |
-|         3	       | ~0.100s	 |
-|         4	       | ~0.394s	 |
-|         5	       | ~6.343s	 |
-|         6	       | ~1m-5m	 	 |
-|         7	       | ~30m	 	 |
+|         1 	       | ~0.082s	     |
+|         2	           | ~0.075s	     |
+|         3	           | ~0.100s	     |
+|         4	           | ~0.394s	     |
+|         5	           | ~6.343s	     |
+|         6	           | ~1m-5m	 	     |
+|         7	           | ~30m	 	     |
 
 ### keyinfo
 
-Prints information about an i2p private key
+Prints information about an i2p keys
 
 #### Usage
 
