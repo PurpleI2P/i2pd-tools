@@ -1,6 +1,7 @@
 #include "vanity.hpp"
-#include<regex>
-#include<getopt.h>
+#include <regex>
+#include <mutex>
+#include <getopt.h>
 
 
 static struct
@@ -124,6 +125,7 @@ static inline bool NotThat(const char * a, const char *b)
 	return false;
 }
 
+std::mutex mtx;
 static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread, unsigned long long throughput)
 {
 /**
@@ -131,7 +133,9 @@ static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread
  * For idea and example ^-^
  * Orignal is sensei of crypto ;)
  */
+	mtx.lock();
 	std::cout << "Thread " << id_thread << " binded" << std::endl;
+	mtx.unlock();
 /*
 	union
 	{
