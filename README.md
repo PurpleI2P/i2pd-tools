@@ -76,6 +76,9 @@ or
 | EDDSA-SHA512-ED25519                 | 7      |
 | GOSTR3410_CRYPTO_PRO_A-GOSTR3411-256 | 9      |
 | GOSTR3410_TC26_A_512-GOSTR3411-512   | 10     |
+| RED25519-SHA512                      | 11     |
+
+For more information on the types of signatures, see the [documentation](https://i2pd.readthedocs.io/en/latest/user-guide/tunnels/#signature-types).
 
 ### vain
 
