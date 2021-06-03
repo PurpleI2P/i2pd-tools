@@ -47,7 +47,7 @@ print iptables firewall rules to allow 1 nodes in netdb through firewall includi
 
 ### keygen
 
-Generate an i2p private key
+Generate an I2P private key
 
 #### Usage
 
@@ -76,6 +76,9 @@ or
 | EDDSA-SHA512-ED25519                 | 7      |
 | GOSTR3410_CRYPTO_PRO_A-GOSTR3411-256 | 9      |
 | GOSTR3410_TC26_A_512-GOSTR3411-512   | 10     |
+| RED25519-SHA512                      | 11     |
+
+For more information on the types of signatures, see the [documentation](https://i2pd.readthedocs.io/en/latest/user-guide/tunnels/#signature-types).
 
 ### vain
 
@@ -88,17 +91,17 @@ Vanity generation address.
 #### Time to Generate on a 2.70GHz Processor
 | characters| time to generate (approx.) |
 | -------------------- | --------------- |
-|         1 	       | ~0.082s	 |
-|         2	       | ~0.075s	 |
-|         3	       | ~0.100s	 |
-|         4	       | ~0.394s	 |
-|         5	       | ~6.343s	 |
-|         6	       | ~1m-5m	 	 |
-|         7	       | ~30m	 	 |
+|         1 	       | ~0.082s	     |
+|         2	           | ~0.075s	     |
+|         3	           | ~0.100s	     |
+|         4	           | ~0.394s	     |
+|         5	           | ~6.343s	     |
+|         6	           | ~1m-5m	 	     |
+|         7	           | ~30m	 	     |
 
 ### keyinfo
 
-Prints information about an i2p private key
+Prints information about an I2P private key
 
 #### Usage
 

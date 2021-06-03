@@ -17,6 +17,7 @@ int main (int argc, char * argv[])
 	if (argc > 2) {
 		std::string str(argv[2]);
 		type = NameToSigType(str);
+		if (SigTypeToName(type).find("unknown") != std::string::npos) { std::cerr << "Incorrect signature type" << std::endl; return -2; }
 	}
 	auto keys = i2p::data::PrivateKeys::CreateRandomKeys (type);
 	std::ofstream f (argv[1], std::ofstream::binary | std::ofstream::out);
@@ -28,6 +29,7 @@ int main (int argc, char * argv[])
 		f.write ((char *)buf, len);
 		delete[] buf;
 		std::cout << "Destination " << keys.GetPublic ()->GetIdentHash ().ToBase32 () << " created" << std::endl;
+		std::cout << "Signature type: " << SigTypeToName(type) << " (" << type << ")" << std::endl;
 	}
 	else
 		std::cout << "Can't create file " << argv[1] << std::endl;
