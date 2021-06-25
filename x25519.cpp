@@ -38,7 +38,7 @@ int main(int argc, char * argv[])
 {
     if (argc > 1)
     {
-        std::string arg = static_cast<std::string>(argv[1]);
+        std::string arg (argv[1]);
         if (arg == "--usage" || arg == "--help" || arg == "-h")
         {
             std::cout << "The x25519 keys are used for authentication with an encrypted LeaseSet.\n"
@@ -57,7 +57,7 @@ int main(int argc, char * argv[])
 
     BoxKeys newKeys = getKeyPair();
 
-    size_t len_out = 50;
+    const size_t len_out = 50;
     char b64Public[len_out] = {0};
     char b64Private[len_out] = {0};
 
