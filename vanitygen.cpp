@@ -143,7 +143,7 @@ static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread
  * Orignal is sensei of crypto ;)
  */
 	mtx.lock();
-	std::cout << "Thread " << id_thread << " binded" << std::endl;
+	std::cout << "[+] thread " << id_thread << " bound" << std::endl;
 	mtx.unlock();
 /*
 	union
@@ -200,7 +200,7 @@ static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread
 		// if(result)
 		{
 			ByteStreamToBase32 ((uint8_t*)hash, 32, addr, 52);
-			std::cout << "Address found " << addr << std::endl;
+			std::cout << "\nFound address: " << addr << std::endl;
 			found=true;
 			FoundNonce=*nonce;
 			// free(hash);
@@ -222,12 +222,14 @@ static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread
 }
 
 void usage(void){
-	const constexpr char * help="vain [text-pattern|regex-pattern] [options]\n"
-	"-h --help    help menu\n"
-	"-r --reg     regexp instead just text pattern (e.g. '(one|two).*')\n"
-	"-t --threads (default count of system)\n"
-//	"--signature -s, (signature type)\n" NOT IMPLEMENTED FUCKING PLAZ!
-	"-o --output  output file (default private.dat)\n"
+	const constexpr char * help="Usage:\n"
+    "  vain [text-pattern|regex-pattern] [options]\n\n"
+    "OPTIONS:\n"
+	"  -h --help      show this help (same as --usage)\n"
+	"  -r --reg       use regexp instead of simple text pattern, ex.: vain '(one|two).*' -r\n"
+	"  -t --threads   number of threads to use (default: one per processor)\n"
+//	"  -s --signature (signature type)\n" // NOT IMPLEMENTED FUCKING PLAZ!
+	"  -o --output    privkey output file name (default: ./" DEF_OUTNAME ")\n"
 	"";
 	puts(help);
 }
@@ -308,7 +310,7 @@ int main (int argc, char * argv[])
 //For while
 	if(options.signature != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519)
 	{
-		std::cout << "For a while only ED25519-SHA512" << std::endl;
+		std::cout << "ED25519-SHA512 are currently the only signing keys supported." << std::endl;
 		return 0;
 	}
 ///////////////
@@ -324,7 +326,7 @@ int main (int argc, char * argv[])
 		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072:
 		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096:
 		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_TC26_A_512_GOSTR3411_512:
-		std::cout << "Sorry, I don't can generate address for this signature type" << std::endl;
+		std::cout << "Sorry, selected signature type is not supported for address generation." << std::endl;
 		return 0;
 		break;
 	}
@@ -371,7 +373,7 @@ int main (int argc, char * argv[])
 #endif
 	}
 
-	std::cout << "Start vanity generator in " << options.threads << " threads" << std::endl;
+	std::cout << "Initializing vanity generator (" << options.threads << " threads)\n" << std::endl;
 
 	unsigned short attempts = 0;
 	while(!found)
@@ -381,28 +383,28 @@ int main (int argc, char * argv[])
 			std::vector<std::thread> threads(options.threads);
 			unsigned long long thoughtput = 0x4F4B5A37;
 
-			for ( unsigned int j = options.threads;j--;)
+            std::cout << "Starting attempt #" << ++attempts << ":" << std::endl;
+			for (unsigned int j = options.threads;j--;)
 			{
 				threads[j] = std::thread(thread_find,KeyBuf,argv[1],j,thoughtput);
 				thoughtput+=1000;
 			} // for
 
-			for(unsigned int j = 0; j < (unsigned int)options.threads;j++)
+			for (unsigned int j = 0; j < (unsigned int)options.threads;j++)
 				threads[j].join();
 
-			if(FoundNonce == 0)
+			if (FoundNonce == 0)
 			{
 				RAND_bytes( KeyBuf+MutateByte , 90 );
-				std::cout << "Attempts #" << ++attempts << std::endl;
 			}
 
 		} // stack
 	} // while
 
 	memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
-	std::cout << "Hashes: " << hashescounter << std::endl;
+	std::cout << "Hashes calculated: " << hashescounter << std::endl;
 
-	if(options.outputpath.size() == 0) options.outputpath="private.dat";
+	if(options.outputpath.size() == 0) options.outputpath.assign(DEF_OUTNAME);
 
 	std::ofstream f (options.outputpath, std::ofstream::binary | std::ofstream::out);
 	if (f)
@@ -411,7 +413,7 @@ int main (int argc, char * argv[])
 		delete [] KeyBuf;
 	}
 	else
-		std::cout << "Can't create file " << options.outputpath << std::endl;
+		std::cout << "Can't create output file: " << options.outputpath << std::endl;
 
 	i2p::crypto::TerminateCrypto ();
 

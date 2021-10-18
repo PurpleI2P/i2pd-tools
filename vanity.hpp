@@ -38,6 +38,8 @@
 	S[(70 - i) % 8], S[(71 - i) % 8], \
 	W[i] + k)
 
+#define DEF_OUTNAME "private.dat"
+
 
 //static i2p::data::SigningKeyType type;
 //static i2p::data::PrivateKeys keys;
