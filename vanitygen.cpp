@@ -162,7 +162,11 @@ static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread
 
 	memcpy (b, buf, 391);
 
-	auto len = strlen (prefix);
+	size_t len = 52;
+	
+	if (!options.reg)
+		len = strlen(prefix);
+
 	// precalculate first 5 blocks (320 bytes)
 	uint32_t state[8] = { 0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19 };
 	HashNextBlock (state, b);
