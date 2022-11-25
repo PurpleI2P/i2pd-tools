@@ -319,7 +319,7 @@ int main(int argc, char * argv[])
 			delete [] k;
 		}
 
-		RouterInfo ri(infofile);
+		LocalRouterInfo ri(infofile);
 		auto ident = ri.GetIdentHash();
 
 
@@ -365,7 +365,7 @@ int main(int argc, char * argv[])
 
 		if (verbose) std::cout << "load " << infofile << std::endl;
 
-		RouterInfo ri(infofile);
+		LocalRouterInfo ri(infofile);
 		auto sig = ri.GetProperty(ROUTER_INFO_PROPERTY_FAMILY_SIG);
 		if (ri.GetProperty(ROUTER_INFO_PROPERTY_FAMILY) != fam) {
 			std::cout << infofile << " does not belong to " << fam << std::endl;

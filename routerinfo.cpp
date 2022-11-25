@@ -12,10 +12,10 @@ static void usage(const char * argv)
 template<typename Addr>
 static std::string address_style_string(Addr addr)
 {
-	if(addr->transportStyle == i2p::data::RouterInfo::eTransportNTCP) {
-		return "NTCP";
-	} else if (addr->transportStyle == i2p::data::RouterInfo::eTransportSSU) {
-		return "SSU";
+	if(addr->transportStyle == i2p::data::RouterInfo::eTransportNTCP2) {
+		return "NTCP2";
+	} else if (addr->transportStyle == i2p::data::RouterInfo::eTransportSSU2) {
+		return "SSU2";
 	}
 	return "???";
 
@@ -26,9 +26,9 @@ static void write_firewall_entry(std::ostream & o, Addr addr)
 {
 
 	std::string proto;
-	if(addr->transportStyle == i2p::data::RouterInfo::eTransportNTCP) {
+	if(addr->transportStyle == i2p::data::RouterInfo::eTransportNTCP2) {
 		proto = "tcp";
-	} else if (addr->transportStyle == i2p::data::RouterInfo::eTransportSSU) {
+	} else if (addr->transportStyle == i2p::data::RouterInfo::eTransportSSU2) {
 		proto = "udp";
 	} else {
 		// bail
@@ -78,15 +78,18 @@ int main(int argc, char * argv[])
 		auto a = ri.GetPublishedNTCP2V4Address();
 		if(a)
 			addrs.push_back(a);
+		a = ri.GetSSU2V4Address();
+		if(a)
+			addrs.push_back(a);
 		if (ipv6)
 		{
 			a = ri.GetPublishedNTCP2V6Address();
 			if(a)
 				addrs.push_back(a);
+			a = ri.GetSSU2V6Address();
+			if(a)
+				addrs.push_back(a);
 		}	
-		a = ri.GetSSUAddress(!ipv6);
-		if(a)
-			addrs.push_back(a);
 
 		if(firewall)
 			std::cout << "# ";
