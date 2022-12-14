@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 dependNix="libboost-chrono-dev \
     libboost-date-time-dev \
@@ -13,15 +13,15 @@ dependWin="mingw-w64-x86_64-boost \
     mingw-w64-x86_64-openssl \
     mingw-w64-x86_64-zlib"
 
-kernel=`uname -a`
+kernel=$(uname -a)
 
 case "$kernel" in
 *Ubuntu*|*Debian*)
-	sudo apt install $dependNix;;
+	sudo apt install "$dependNix";;
 *gentoo*)
 	sudo emerge --deep --newuse dev-libs/boost dev-libs/openssl;;
 *MINGW64*)
-	pacman -S $dependWin;;
+	pacman -S "$dependWin";;
 *)
-	echo "Just install libboost and libopenssl dev packages on your pc";;
+	printf "Just install libboost and libopenssl dev packages on your pc\n";;
 esac
