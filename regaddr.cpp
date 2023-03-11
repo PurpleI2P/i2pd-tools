@@ -16,6 +16,7 @@ int main (int argc, char * argv[])
 
 	i2p::data::PrivateKeys keys;
 	std::ifstream s(argv[1], std::ifstream::binary);
+
 	if (s.is_open ())
 	{
 		s.seekg (0, std::ios::end);
@@ -23,6 +24,7 @@ int main (int argc, char * argv[])
 		s.seekg (0, std::ios::beg);
 		uint8_t * buf = new uint8_t[len];
 		s.read ((char *)buf, len);
+
 		if(keys.FromBuffer (buf, len))
 		{
 			auto signatureLen = keys.GetPublic ()->GetSignatureLen ();
@@ -41,10 +43,10 @@ int main (int argc, char * argv[])
 		}
 		else
 			std::cout << "Failed to load keyfile " << argv[1] << std::endl;
+
 		delete[] buf;
 	}
 
 	i2p::crypto::TerminateCrypto ();
-
 	return 0;
 }

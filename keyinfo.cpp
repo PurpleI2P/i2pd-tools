@@ -12,7 +12,7 @@
 
 static int printHelp(const char * exe, int exitcode)
 {
-	std::cout << "usage: " << exe << " [-v] [-d] [-b] privatekey.dat" << std::endl;
+	std::cout << "usage: " << exe << " [-v] [-d] [-p] [-b] privatekey.dat" << std::endl;
 	return exitcode;
 }
 
@@ -31,10 +31,11 @@ int main(int argc, char * argv[])
 	}
 
 	int opt;
-	bool print_full = false;
+	bool print_dest = false;
+	bool print_private = false;
 	bool print_blinded = false;
 	bool verbose = false;
-	while((opt = getopt(argc, argv, "hvdb")) != -1) {
+	while((opt = getopt(argc, argv, "hvdpb")) != -1) {
 		switch(opt){
 		case 'h':
 			return printHelp(argv[0], 0);
@@ -42,7 +43,10 @@ int main(int argc, char * argv[])
 			verbose = true;
 			break;
 		case 'd':
-			print_full = true;
+			print_dest = true;
+			break;
+		case 'p':
+			print_private = true;
 			break;
 		case 'b':
 			print_blinded = true;
@@ -54,23 +58,22 @@ int main(int argc, char * argv[])
 
 	std::string fname(argv[optind]);
 	i2p::data::PrivateKeys keys;
-	{
-		std::vector<uint8_t> buff;
-		std::ifstream inf;
-		inf.open(fname);
-		if (!inf.is_open()) {
-			std::cout << "cannot open private key file " << fname << std::endl;
-			return 2;
-		}
-		inf.seekg(0, std::ios::end);
-		const std::size_t len = inf.tellg();
-		inf.seekg(0, std::ios::beg);
-		buff.resize(len);
-		inf.read((char*)buff.data(), buff.size());
-		if (!keys.FromBuffer(buff.data(), buff.size())) {
-			std::cout << "bad key file format" << std::endl;
-			return 3;
-		}
+	std::ifstream s(fname, std::ifstream::binary);
+
+	if (!s.is_open()) {
+		std::cout << "cannot open private key file " << fname << std::endl;
+		return 2;
+	}
+
+	s.seekg(0, std::ios::end);
+	size_t len = s.tellg();
+	s.seekg(0, std::ios::beg);
+	uint8_t * buf = new uint8_t[len];
+	s.read((char*)buf, len);
+
+	if (!keys.FromBuffer(buf, len)) {
+		std::cout << "bad key file format" << std::endl;
+		return 3;
 	}
 
 	auto dest = keys.GetPublic();
@@ -94,7 +97,9 @@ int main(int argc, char * argv[])
 			std::cout << "Transient Signature Type: " << SigTypeToName(bufbe16toh(offlineSignature.data () + 4)) << std::endl;
 		}
 	} else {
-		if(print_full) {
+		if(print_private) {
+			std::cout << keys.ToBase64() << std::endl;
+		} else if(print_dest) {
 			std::cout << dest->ToBase64() << std::endl;
 		} else {
 			std::cout << ident.ToBase32() << ".b32.i2p" << std::endl;
@@ -112,4 +117,7 @@ int main(int argc, char * argv[])
 		else
 			std::cout << "Invalid signature type " << SigTypeToName (dest->GetSigningKeyType ()) << std::endl;
 	}
+
+	i2p::crypto::TerminateCrypto ();
+	return 0;
 }
