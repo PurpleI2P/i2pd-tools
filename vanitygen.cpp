@@ -1,15 +1,72 @@
-#include "vanity.hpp"
+#include "Crypto.h"
+#include "Identity.h"
+#include "I2PEndian.h"
+#include "common/key.hpp"
+
 #include <regex>
 #include <mutex>
 #include <getopt.h>
+#include <iostream>
+#include <fstream>
+#include <stdlib.h>
+#include <openssl/rand.h>
+#include <thread>
+#include <unistd.h>
+#include <vector>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+// sha256
+#define Ch(x, y, z)		((x & (y ^ z)) ^ z)
+#define Maj(x, y, z)	((x & (y | z)) | (y & z))
+#define SHR(x, n)		(x >> n)
+#define ROTR(x, n)		((x >> n) | (x << (32 - n)))
+#define S0(x)			(ROTR(x, 2) ^ ROTR(x, 13) ^ ROTR(x, 22))
+#define S1(x)			(ROTR(x, 6) ^ ROTR(x, 11) ^ ROTR(x, 25))
+#define s0(x)			(ROTR(x, 7) ^ ROTR(x, 18) ^ SHR(x, 3))
+#define s1(x)			(ROTR(x, 17) ^ ROTR(x, 19) ^ SHR(x, 10))
+
+#define RND(a, b, c, d, e, f, g, h, k) \
+	t0 = h + S1(e) + Ch(e, f, g) + k; \
+	t1 = S0(a) + Maj(a, b, c); \
+	d += t0; \
+	h = t0 + t1;
+
+#define RNDr(S, W, i, k) \
+	RND(S[(64 - i) % 8], S[(65 - i) % 8], \
+	S[(66 - i) % 8], S[(67 - i) % 8], \
+	S[(68 - i) % 8], S[(69 - i) % 8], \
+	S[(70 - i) % 8], S[(71 - i) % 8], \
+	W[i] + k)
+
+#define DEF_OUTNAME "private.dat"
+
+static bool found = false;
+static size_t MutateByte;
+static uint8_t * KeyBuf;
+
+unsigned int count_cpu;
+
+const uint8_t lastBlock[64] =
+{
+	0x05, 0x00, 0x04, 0x00, 0x07, 0x00, 0x00, 0x80, // 7 bytes EdDSA certificate 
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0C, 0x38  // 3128 bits (391 bytes)
+};
 
 static struct
 {
-	bool reg=false;
-	int threads=-1;
+	bool reg = false;
+	int threads = -1;
 	i2p::data::SigningKeyType signature;
-	std::string outputpath="";
+	std::string outputpath = "";
 	std::regex regex;
 	bool sig_type = true;
 } options;
@@ -23,7 +80,7 @@ void check_sig_type()
 	}
 }
 
-static void inline CalculateW (const uint8_t block[64], uint32_t W[64])
+void inline CalculateW (const uint8_t block[64], uint32_t W[64])
 {
 /**
  * implementation of orignal
@@ -39,7 +96,7 @@ static void inline CalculateW (const uint8_t block[64], uint32_t W[64])
 		W[i] = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
 }
 
-static void inline TransformBlock (uint32_t state[8], const uint32_t W[64])
+void inline TransformBlock (uint32_t state[8], const uint32_t W[64])
 {
 /**
  * implementation of orignal
@@ -78,9 +135,9 @@ void inline HashNextBlock (uint32_t state[8], const uint8_t * block)
 	TransformBlock (state, W);
 }
 
-static bool check_prefix(const char * buf)
+bool check_prefix(const char * buf)
 {
-	unsigned short size_str=0;
+	unsigned short size_str = 0;
 	while(*buf)
 	{
 		if(!((*buf > 49 && *buf < 56) || (*buf > 96 && *buf < 123)) || size_str > 52)
@@ -91,7 +148,7 @@ static bool check_prefix(const char * buf)
 	return true;
 }
 
-static inline size_t ByteStreamToBase32 (const uint8_t * inBuf, size_t len, char * outBuf, size_t outLen)
+inline size_t ByteStreamToBase32 (const uint8_t * inBuf, size_t len, char * outBuf, size_t outLen)
 {
 	size_t ret = 0, pos = 1;
 	int bits = 8, tmp = inBuf[0];
@@ -122,11 +179,11 @@ static inline size_t ByteStreamToBase32 (const uint8_t * inBuf, size_t len, char
 	return ret;
 }
 
-static inline bool NotThat(const char * what, const std::regex & reg){
+inline bool NotThat(const char * what, const std::regex & reg){
 	return std::regex_match(what,reg) == 1 ? false : true;
 }
 
-static inline bool NotThat(const char * a, const char *b)
+inline bool NotThat(const char * a, const char *b)
 {
 	while(*b)
 		if(*a++!=*b++)
@@ -134,29 +191,53 @@ static inline bool NotThat(const char * a, const char *b)
 	return false;
 }
 
-std::mutex mtx;
-static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread, unsigned long long throughput)
+void processFlipper(const std::string string)
 {
-/**
- * Thanks to orignal ^-^
- * For idea and example ^-^
- * Orignal is sensei of crypto ;)
- */
-	mtx.lock();
-	std::cout << "[+] thread " << id_thread << " bound" << std::endl;
-	mtx.unlock();
-/*
-	union
-	{
-		uint8_t b[391];
-		uint32_t ll;
-	} local;
-	union
-	{
-		uint8_t b[32];
-		uint32_t ll[8];
-	} hash;
-*/
+    constexpr char SYMBOLS[] {'-', '\\', '|', '/'};
+    uint8_t symbol_counter = 0;
+    std::string payload = string;
+    if (payload.back() != ' ') payload += ' ';
+    
+    size_t current_state = payload.size();
+    enum { left, right } direction = left;
+    
+    std::cout << payload << SYMBOLS[symbol_counter++];
+    while (!found)
+    {
+        std::cout << '\b' << SYMBOLS[symbol_counter++];
+        std::cout.flush();
+        
+        if (symbol_counter == sizeof(SYMBOLS))
+        {
+            if (direction == left)
+            {
+                std::cout << '\b';
+                std::cout.flush();
+                symbol_counter = 0;
+                if (!--current_state)
+                {
+                    direction = right;
+                }
+            }
+            else if (direction == right)
+            {
+                std::cout << '\b' << payload[current_state] << " ";
+                std::cout.flush();
+                symbol_counter = 0;
+                
+                if (++current_state == payload.size())
+                {
+                    direction = left;
+                }
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(80));
+    }
+}
+
+bool thread_find(uint8_t * buf, const char * prefix, int id_thread, unsigned long long throughput)
+{
+    const unsigned long long original_throughput = throughput;
 	uint8_t b[391];
 	uint32_t hash[8];
 
@@ -185,8 +266,13 @@ static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread
 	char addr[53];
 	uint32_t state1[8];
 
-	while(throughput-- and !found)
+	while(!found)
 	{
+		if (! throughput--)
+		{
+			throughput = original_throughput;
+		}
+        
 		memcpy (state1, state, 32);
 		// calculate hash of block with nonce
 		HashNextBlock (state1, b + 320);
@@ -196,32 +282,22 @@ static inline bool thread_find(uint8_t * buf, const char * prefix, int id_thread
 		for (int j = 8; j--;)
 			hash[j] = htobe32(state1[j]);
 		ByteStreamToBase32 ((uint8_t*)hash, 32, addr, len);
-		// std::cout << addr << std::endl;
 
-		// bool result = options.reg ? !NotThat(addr, &options.regex) : !NotThat(addr,prefix);
-
-		if( ( options.reg ? !NotThat(addr, options.regex) : !NotThat(addr,prefix) ) )
-		// if(result)
+		if( options.reg ? !NotThat(addr, options.regex) : !NotThat(addr, prefix) )
 		{
 			ByteStreamToBase32 ((uint8_t*)hash, 32, addr, 52);
 			std::cout << "\nFound address: " << addr << std::endl;
-			found=true;
-			FoundNonce=*nonce;
-			// free(hash);
-			// free(b);
+			found = true;
 			return true;
 		}
 
-
 		(*nonce)++;
-		hashescounter++;
 		if (found)
 		{
-			// free(hash);
-			// free(b);
 			break;
 		}
-	} // while
+	}
+	
 	return true;
 }
 
@@ -292,6 +368,7 @@ int main (int argc, char * argv[])
 		usage();
 		return 0;
 	}
+    
 	parsing( argc > 2 ? argc-1 : argc, argc > 2 ? argv+1 : argv);
 	//
 	if(!options.reg && !check_prefix( argv[1] ))
@@ -301,25 +378,17 @@ int main (int argc, char * argv[])
 		return 1;
 	}else{
 		options.regex=std::regex(argv[1]);
-//		int ret = regcomp( &options.regex, argv[1], REG_EXTENDED );
-//		if( ret != 0 ){
-//			std::cerr << "Can't create regexp pattern from " << argv[1] << std::endl;
-//			return 1;
-//		}
 	}
 
 	i2p::crypto::InitCrypto (false, true, true, false);
 	options.signature = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
-///////////////
-//For while
+
 	if(options.signature != i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519)
 	{
 		std::cout << "ED25519-SHA512 are currently the only signing keys supported." << std::endl;
 		return 0;
 	}
-///////////////
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	if (!options.sig_type) return -2;
 	auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
 	switch(options.signature)
@@ -362,55 +431,28 @@ int main (int argc, char * argv[])
 
 	if(options.threads <= 0)
 	{
-#if defined(WIN32)
-		SYSTEM_INFO siSysInfo;
-		GetSystemInfo(&siSysInfo);
-		options.threads = siSysInfo.dwNumberOfProcessors;
-#elif defined(_SC_NPROCESSORS_CONF)
-		options.threads = sysconf(_SC_NPROCESSORS_CONF);
-#elif defined(HW_NCPU)
-		int req[] = { CTL_HW, HW_NCPU };
-		size_t len = sizeof(options.threads);
-		v = sysctl(req, 2, &options.threads, &len, NULL, 0);
-#else
-		options.threads = 1;
-#endif
+		options.threads = std::thread::hardware_concurrency();
+	}
+	
+	std::cout << "Vanity generator started in " << options.threads << " threads" << std::endl;
+
+	std::vector<std::thread> threads(options.threads);
+	unsigned long long thoughtput = 0x4F4B5A37;
+
+	for (unsigned int j = options.threads; j--; )
+	{
+		threads[j] = std::thread(thread_find, KeyBuf, argv[1], j, thoughtput);
+		thoughtput += 1000;
 	}
 
-	std::cout << "Initializing vanity generator (" << options.threads << " threads)\n" << std::endl;
+	processFlipper(argv[1]);
+    
+	for (unsigned int j = 0; j < (unsigned int)options.threads;j++)
+		threads[j].join();
 
-	unsigned short attempts = 0;
-	while(!found)
-	{ // while
-		{ // stack(for destructors(vector/thread))
+	if(options.outputpath.empty()) options.outputpath.assign(DEF_OUTNAME);
 
-			std::vector<std::thread> threads(options.threads);
-			unsigned long long thoughtput = 0x4F4B5A37;
-
-            std::cout << "Starting attempt #" << ++attempts << ":" << std::endl;
-			for (unsigned int j = options.threads;j--;)
-			{
-				threads[j] = std::thread(thread_find,KeyBuf,argv[1],j,thoughtput);
-				thoughtput+=1000;
-			} // for
-
-			for (unsigned int j = 0; j < (unsigned int)options.threads;j++)
-				threads[j].join();
-
-			if (FoundNonce == 0)
-			{
-				RAND_bytes( KeyBuf+MutateByte , 90 );
-			}
-
-		} // stack
-	} // while
-
-	memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
-	std::cout << "Hashes calculated: " << hashescounter << std::endl;
-
-	if(options.outputpath.size() == 0) options.outputpath.assign(DEF_OUTNAME);
-
-	std::ofstream f (options.outputpath, std::ofstream::binary | std::ofstream::out);
+	std::ofstream f (options.outputpath, std::ofstream::binary);
 	if (f)
 	{
 		f.write ((char *)KeyBuf, keys.GetFullLen ());
