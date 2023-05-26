@@ -268,10 +268,10 @@ bool thread_find(uint8_t * buf, const char * prefix, int id_thread, unsigned lon
 
 	while(!found)
 	{
-        if (! throughput--)
-        {
-            throughput = original_throughput;
-        }
+		if (! throughput--)
+		{
+			throughput = original_throughput;
+		}
         
 		memcpy (state1, state, 32);
 		// calculate hash of block with nonce
@@ -431,24 +431,24 @@ int main (int argc, char * argv[])
 
 	if(options.threads <= 0)
 	{
-        options.threads = std::thread::hardware_concurrency();
+		options.threads = std::thread::hardware_concurrency();
 	}
 	
 	std::cout << "Vanity generator started in " << options.threads << " threads" << std::endl;
 
-    std::vector<std::thread> threads(options.threads);
-    unsigned long long thoughtput = 0x4F4B5A37;
+	std::vector<std::thread> threads(options.threads);
+	unsigned long long thoughtput = 0x4F4B5A37;
 
-    for (unsigned int j = options.threads; j--; )
-    {
-        threads[j] = std::thread(thread_find, KeyBuf, argv[1], j, thoughtput);
-        thoughtput += 1000;
-    }
+	for (unsigned int j = options.threads; j--; )
+	{
+		threads[j] = std::thread(thread_find, KeyBuf, argv[1], j, thoughtput);
+		thoughtput += 1000;
+	}
 
-    processFlipper(argv[1]);
+	processFlipper(argv[1]);
     
-    for (unsigned int j = 0; j < (unsigned int)options.threads;j++)
-        threads[j].join();
+	for (unsigned int j = 0; j < (unsigned int)options.threads;j++)
+		threads[j].join();
 
 	if(options.outputpath.empty()) options.outputpath.assign(DEF_OUTNAME);
 
