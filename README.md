@@ -80,14 +80,6 @@ or
 
 For more information on the types of signatures, see the [documentation](https://i2pd.readthedocs.io/en/latest/user-guide/tunnels/#signature-types).
 
-### vain
-
-Vanity generation address.
-
-#### Usage
-
-./vain --usage
-
 #### Time to Generate on a 2.70GHz Processor
 | characters| time to generate (approx.) |
 | -------------------- | --------------- |

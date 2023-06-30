@@ -43,7 +43,7 @@ else
 	LDFLAGS += -s -static
 endif
 
-all: $(I2PD_LIB) keygen keyinfo famtool routerinfo regaddr regaddr_3ld vain i2pbase64 offlinekeys b33address regaddralias x25519 verifyhost
+all: $(I2PD_LIB) keygen keyinfo famtool routerinfo regaddr regaddr_3ld i2pbase64 offlinekeys b33address regaddralias x25519 verifyhost
 
 routerinfo: routerinfo.o $(I2PD_LIB)
 	$(CXX) -o routerinfo $(LDFLAGS) routerinfo.o $(LDLIBS)
@@ -62,9 +62,6 @@ regaddr: regaddr.o $(I2PD_LIB)
 
 regaddr_3ld: regaddr_3ld.o $(I2PD_LIB)
 	$(CXX) -o regaddr_3ld $(DEFINES) $(LDFLAGS) regaddr_3ld.o $(LDLIBS)
-
-vain: vanitygen.o $(I2PD_LIB)
-	$(CXX) -o vain $(DEFINES) $(LDFLAGS) vanitygen.o $(LDLIBS)
 
 i2pbase64: i2pbase64.o $(I2PD_LIB)
 	$(CXX) -o i2pbase64 $(DEFINES) $(LDFLAGS) i2pbase64.o $(LDLIBS)
@@ -103,7 +100,7 @@ clean-obj:
 	rm -f $(wildcard *.o)
 
 clean-bin:
-	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo vain x25519 verifyhost
+	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost
 
 clean: clean-i2pd clean-obj clean-bin
 
