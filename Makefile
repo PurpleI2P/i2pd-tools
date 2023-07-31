@@ -12,7 +12,8 @@ INCFLAGS = -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH)
 DEFINES = -DOPENSSL_SUPPRESS_DEPRECATED
 
 LDFLAGS = 
-LDLIBS = $(I2PD_PATH)/$(I2PD_LIB) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lz
+LDLIBS = $(I2PD_PATH)/$(I2PD_LIB) -lboost_system$(BOOST_SUFFIX) -lboost_date_time$(BOOST_SUFFIX) -lboost_filesystem$(BOOST_SUFFIX) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lz 
+
 
 ifeq ($(UNAME),Linux)
 	CXXFLAGS += -g
@@ -43,11 +44,12 @@ else
 	LDFLAGS += -s -static
 endif
 
+
 all: $(I2PD_LIB) vain keygen keyinfo famtool routerinfo regaddr regaddr_3ld i2pbase64 offlinekeys b33address regaddralias x25519 verifyhost 
 vain:	vain.o $(I2PD_LIB)
 	$(CXX) -o vain $(LDFLAGS) vain.o $(LDLIBS)
 routerinfo: routerinfo.o $(I2PD_LIB)
-	$(CXX) -o routerinfo $(LDFLAGS) routerinfo.o $(LDLIBS)
+	$(CXX) -o routerinfo $(LDFLAGS) routerinfo.o $(LDLIBS) -latomic
 
 keygen: keygen.o $(I2PD_LIB)
 	$(CXX) -o keygen $(DEFINES) $(LDFLAGS) keygen.o $(LDLIBS)
@@ -56,7 +58,7 @@ keyinfo: keyinfo.o $(I2PD_LIB)
 	$(CXX) -o keyinfo $(DEFINES) $(LDFLAGS) keyinfo.o $(LDLIBS)
 
 famtool: famtool.o $(I2PD_LIB)
-	$(CXX) -o famtool $(DEFINES) $(LDFLAGS) famtool.o $(LDLIBS)
+	$(CXX) -o famtool $(DEFINES) $(LDFLAGS) famtool.o $(LDLIBS) -latomic
 
 regaddr: regaddr.o $(I2PD_LIB)
 	$(CXX) -o regaddr $(DEFINES) $(LDFLAGS) regaddr.o $(LDLIBS)
