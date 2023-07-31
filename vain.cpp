@@ -3,24 +3,10 @@
 #include<getopt.h>
 #include<string>
 #include<boost/filesystem.hpp>
+//#include<boost/algorithm/string/predicate.hpp>
 //#include<format> // is not supports for me
 
-/// Crypto InitCrypto. TODO: to makefile/another place get the macro
-#ifndef PRECOMPUTATION_CRYPTO 
-#define PRECOMPUTATION_CRYPTO false
-#endif
-#ifndef AESNI_CRYPTO 
-#define AESNI_CRYPTO false
-#endif
-#ifndef AVX_CRYPTO 
-#define AVX_CRYPTO false
-#endif
-#ifndef FORCE_CRYPTO
-#define FORCE_CRYPTO false
-#endif
-
-#define DEF_OUT_FILE "private.dat"
-
+// some global vars in vanitygen.hpp
 static struct{
         bool reg=false;
         int threads=-1;
@@ -240,6 +226,7 @@ void usage(void){
 	"-o --output output file(default " DEF_OUT_FILE ")\n"
 //"--usage usage\n"
 //"--prefix -p\n"
+	"--multiplymode -m - multiple addresses search"
 	"";
 	puts(help);
 }
@@ -253,18 +240,22 @@ void parsing(int argc, char ** args){
 		{"threads", required_argument, 0, 't'},
 		{"signature", required_argument,0,'s'},
 		{"output", required_argument,0,'o'},
+		{"multiplymode", no_argument, 0, 'm'},
 		//{"usage", no_argument,0,0},
 		{0,0,0,0}
 	};
 
 	int c;
-	while( (c=getopt_long(argc,args, "hrt:s:o:", long_options, &option_index))!=-1){
+	while( (c=getopt_long(argc,args, "hrt:s:o:m", long_options, &option_index))!=-1){
 		switch(c){
 			//case 0:
 			//	if ( std::string(long_options[option_index].name) == std::string("usage") ){
 			//		usage();
 			//		exit(1);
 			//	}
+			case 'm':
+				multipleSearchMode=true;
+				break;
 			case 'h':
 				usage();
 				exit(0);
@@ -357,129 +348,145 @@ int main (int argc, char * argv[])
 	if ( !std::regex_match( std::string(argv[1]), std::regex("[a-zA-Z0-9\\.]{1,}")) ) {
 				std::cerr << "Please, change the outputfile name" << std::endl;
 	}
-	auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
-	// IDK type, and don't want to check. so...
-	auto createDumpFile = [/*keys*/](std::string outFile, i2p::data::PrivateKeys keys){
-			std::cout <<" Create a outFile " << outFile << std::endl;
-			std::ofstream f(outFile, std::ofstream::binary | std::ofstream:: out);
-			if (!f) {
-				std::cerr << "Can't to create a dump file before search address" << std::endl;
-				exit(1);
-			}
-			size_t len = keys.GetFullLen ();
-			uint8_t * buf = new uint8_t[len];
-			len = keys.ToBuffer (buf, len);
-			f.write ((char *)buf, len);
-			delete[] buf;
-		}; // is double of code. we can found simillar in keygen.cpp. WE would to create a library like 
-		// libi2pdtools
-		// TODO: create libi2pd_tools
-	// If file not exists we create a dump file. (a bug was found in issues)
-	switch(options.signature)
-	{
-		case i2p::data::SIGNING_KEY_TYPE_DSA_SHA1:
-		case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA512_P521:
-		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA256_2048:
-		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072:
-		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096:
-		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_TC26_A_512_GOSTR3411_512:
-		std::cout << "Sorry, i don't can generate adress for this signature type" << std::endl;
-		return 0;
-		break;
-	}
+	// 
+     	if ( options . outputpath . empty () ) options . outputpath . assign ( DEF_OUT_FILE ) ;
+	static std::string outPutFileName  = options.outputpath;
+	auto doSearch = [argc,argv] () {
+     	 auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
+     	 // IDK type, and don't want to check. so...
+     	 auto createDumpFile = [/*keys*/](std::string outFile, i2p::data::PrivateKeys keys){
+     			std::cout <<" Create a outFile " << outFile << std::endl;
+     			std::ofstream f(outFile, std::ofstream::binary | std::ofstream:: out);
+     			if (!f) {
+     				std::cerr << "Can't to create a dump file before search address" << std::endl;
+     				exit(1);
+     			}
+     			size_t len = keys.GetFullLen ();
+     			uint8_t * buf = new uint8_t[len];
+     			len = keys.ToBuffer (buf, len);
+     			f.write ((char *)buf, len);
+     			delete[] buf;
+     		}; // is double of code. we can found simillar in keygen.cpp. WE would to create a library like 
+     		// libi2pdtools
+     		// TODO: create libi2pd_tools
+     	 // If file not exists we create a dump file. (a bug was found in issues)
+     	 switch(options.signature)
+     	 {
+     		case i2p::data::SIGNING_KEY_TYPE_DSA_SHA1:
+     		case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA512_P521:
+     		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA256_2048:
+     		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072:
+     		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096:
+     		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_TC26_A_512_GOSTR3411_512:
+     		std::cout << "Sorry, i don't can generate adress for this signature type" << std::endl;
+     		return 0;
+     		break;
+     	 }
+     
+        //TODO: for other types.
+     	switch(options.signature)
+     	{
+     		case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA256_P256:
+     		break;
+     		case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA384_P384:
+     		break;
+     		case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA512_P521:
+     		break;
+     		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA256_2048:
+     		break;
+     		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072:
+     		break;
+     		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096:
+     		break;
+     		case i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519:
+     			MutateByte=320;
+     		break;
+     		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256:
+     		break;
+     	}
+     // there we gen key to buffer. That we mem allocate...
+     	KeyBuf = new uint8_t[keys.GetFullLen()];
+     	keys.ToBuffer (KeyBuf, keys.GetFullLen ());
+     /// there was some things for cpu 665% usage, but is not helpful even
+     	std::cout << "Start vanity generator in " << options.threads << " threads" << std::endl;
+     // there we start to change byte in our private key. we can change another bytes too 
+     // but we just change 1 byte in all key. So. TODO: change all bytes not one?
+     	unsigned short attempts = 0;// it can be disabled, it's just for a statistic. For CPU this is a trash?
+     	while(!found)
+     	{//while
+     		{//stack(for destructors(vector/thread))
+     
+     			std::vector<std::thread> threads(options.threads);
+     			unsigned long long thoughtput = 0x4F4B5A37; // is a magic number. 
+     
+     			for ( unsigned int j = options.threads;j--;)
+     			{
+     				// our buf is our key, but in uint8 type, unsigned integ... another argument
+     				// is our prefix that we search in address
+     				// and j is magic number, is thread id. 
+     				// thoughtput is our magic number that we increment on 1000 everytime
+     				// so we just change a one a byte in key and convert private key to address
+     				// after we check it.
+     				threads[j] = std::thread(thread_find,KeyBuf,argv[1],j,thoughtput);
+     				thoughtput+=1000; 
+     			}//for
+     
+     			//There will be proccessFlipper by accetone
+     			// if I correctly understand it's drop a payload things in a prefix/search data
+     			// or simmilar. We can just use regex. I would to use regex
+     		
+     			// So I put it ^^^
+     			for(unsigned int j = 0; j < (unsigned int)options.threads;j++)
+     				threads[j].join();
+     
+     			if(FoundNonce == 0)
+     			{
+     				RAND_bytes( KeyBuf+MutateByte , 90 ); // FoundNonce is
+     				std::cout << "Attempts #" << ++attempts << std::endl;
+     			}
+     
+     		}//stack
+     	}//while
+     	// before we write result we would to create private.dat a file. dump file. we can use for it keygen
+     	// so.
+     	memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
+     	std::cout << "Hashes: " << hashescounter << std::endl;
+     
+     	// IDK. what for acetone change this line to if (options.output...empty() ... assign
+     	// cplusplus.com/reference/string/string/assign yes we can. but I would don't change this
+     	//if(options.outputpath.size() == 0) options.outputpath = DEF_OUT_FILE;
+	options.outputpath = options.outputpath + std::to_string(foundKeys) + std::string(".dat");
 
-//TODO: for other types.
-	switch(options.signature)
-	{
-		case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA256_P256:
-		break;
-		case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA384_P384:
-		break;
-		case i2p::data::SIGNING_KEY_TYPE_ECDSA_SHA512_P521:
-		break;
-		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA256_2048:
-		break;
-		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA384_3072:
-		break;
-		case i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096:
-		break;
-		case i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519:
-			MutateByte=320;
-		break;
-		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256:
-		break;
-	}
-// there we gen key to buffer. That we mem allocate...
-	KeyBuf = new uint8_t[keys.GetFullLen()];
-	keys.ToBuffer (KeyBuf, keys.GetFullLen ());
-/// there was some things for cpu 665% usage, but is not helpful even
-	std::cout << "Start vanity generator in " << options.threads << " threads" << std::endl;
-// there we start to change byte in our private key. we can change another bytes too 
-// but we just change 1 byte in all key. So. TODO: change all bytes not one?
-	unsigned short attempts = 0;// it can be disabled, it's just for a statistic. For CPU this is a trash?
-	while(!found)
-	{//while
-		{//stack(for destructors(vector/thread))
+	//if ( ! boost::algorithm::ends_with(options.outputpath, ".dat") ) 
+	//	options.outputpath = options.outputpath + ".dat";
+     
+     	// there we generate a key, like as in keygen.cpp
+     	// before a mining we would to create a dump file
+     	
+     	std::cout << "outpath for a now: " << options.outputpath << std::endl;
+     	if( ! boost::filesystem::exists(options.outputpath) ) createDumpFile(options.outputpath, keys);
+     
+     	std::ofstream f (options.outputpath, std::ofstream::binary | std::ofstream::out);
+     	if (f)
+     	{
+     		f.write ((char *)KeyBuf, keys.GetFullLen ());
+     		delete [] KeyBuf;
+     	}
+     	else
+     		std::cout << "Can't create file " << options.outputpath << std::endl;
+     
+     }; // void doSearch lamda
 
-			std::vector<std::thread> threads(options.threads);
-			unsigned long long thoughtput = 0x4F4B5A37; // is a magic number. 
+     do {
+		doSearch();
+		foundKeys++;
+		options.outputpath.assign(outPutFileName);
+		found = false;
+		FoundNonce = 0;
+     } while(multipleSearchMode);
 
-			for ( unsigned int j = options.threads;j--;)
-			{
-				// our buf is our key, but in uint8 type, unsigned integ... another argument
-				// is our prefix that we search in address
-				// and j is magic number, is thread id. 
-				// thoughtput is our magic number that we increment on 1000 everytime
-				// so we just change a one a byte in key and convert private key to address
-				// after we check it.
-				threads[j] = std::thread(thread_find,KeyBuf,argv[1],j,thoughtput);
-				thoughtput+=1000; 
-			}//for
-
-			//There will be proccessFlipper by accetone
-			// if I correctly understand it's drop a payload things in a prefix/search data
-			// or simmilar. We can just use regex. I would to use regex
-		
-			// So I put it ^^^
-			for(unsigned int j = 0; j < (unsigned int)options.threads;j++)
-				threads[j].join();
-
-			if(FoundNonce == 0)
-			{
-				RAND_bytes( KeyBuf+MutateByte , 90 ); // FoundNonce is
-				std::cout << "Attempts #" << ++attempts << std::endl;
-			}
-
-		}//stack
-	}//while
-	// before we write result we would to create private.dat a file. dump file. we can use for it keygen
-	// so.
-	memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
-	std::cout << "Hashes: " << hashescounter << std::endl;
-
-	// IDK. what for acetone change this line to if (options.output...empty() ... assign
-	// cplusplus.com/reference/string/string/assign yes we can. but I would don't change this
-	//if(options.outputpath.size() == 0) options.outputpath = DEF_OUT_FILE;
-	if ( options . outputpath . empty () ) options . outputpath . assign ( DEF_OUT_FILE ) ;
-
-	// there we generate a key, like as in keygen.cpp
-	// before a mining we would to create a dump file
-	
-	std::cout << "outpath for a now: " << options.outputpath << std::endl;
-	if( ! boost::filesystem::exists(options.outputpath) ) createDumpFile(options.outputpath, keys);
-
-	std::ofstream f (options.outputpath, std::ofstream::binary | std::ofstream::out);
-	if (f)
-	{
-		f.write ((char *)KeyBuf, keys.GetFullLen ());
-		delete [] KeyBuf;
-	}
-	else
-		std::cout << "Can't create file " << options.outputpath << std::endl;
-
-	i2p::crypto::TerminateCrypto ();
-
-	return 0;
+     i2p::crypto::TerminateCrypto ();
+     return 0;
 }
 
 

@@ -41,8 +41,27 @@
 
 //static i2p::data::SigningKeyType type;
 //static i2p::data::PrivateKeys keys;
-static bool found=false;
 
+
+// for  InitCrypto. TODO: to makefile/another place get the macro
+#ifndef PRECOMPUTATION_CRYPTO 
+#define PRECOMPUTATION_CRYPTO false
+#endif
+#ifndef AESNI_CRYPTO 
+#define AESNI_CRYPTO false
+#endif
+#ifndef AVX_CRYPTO 
+#define AVX_CRYPTO false
+#endif
+#ifndef FORCE_CRYPTO
+#define FORCE_CRYPTO false
+#endif
+// def out file name
+#define DEF_OUT_FILE "private"
+// Global vars
+static bool found=false;
+static bool multipleSearchMode = false;
+static unsigned int foundKeys = 0;
 static size_t MutateByte;
 
 static uint32_t FoundNonce=0;
