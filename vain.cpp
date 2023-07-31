@@ -1,6 +1,10 @@
 #include "vanity.hpp"
 #include<regex>
 #include<getopt.h>
+#include<string>
+#include<boost/filesystem.hpp>
+//#include<format> // is not supports for me
+
 /// Crypto InitCrypto. TODO: to makefile/another place get the macro
 #ifndef PRECOMPUTATION_CRYPTO 
 #define PRECOMPUTATION_CRYPTO false
@@ -14,6 +18,8 @@
 #ifndef FORCE_CRYPTO
 #define FORCE_CRYPTO false
 #endif
+
+#define DEF_OUT_FILE "private.dat"
 
 static struct{
         bool reg=false;
@@ -156,10 +162,10 @@ Orignal is sensei of crypto ;)
 		uint32_t ll[8];
 	} hash;
 */
-	uint8_t b[391];
+	uint8_t b[391]; // b length is 391.
 	uint32_t hash[8];
 
-	memcpy (b, buf, 391);
+	memcpy (b, buf, 391); // we copy in b our buf, that we give in function.
 
 	auto len = strlen (prefix);
 	// precalculate first 5 blocks (320 bytes)
@@ -174,7 +180,7 @@ Orignal is sensei of crypto ;)
 	uint32_t lastW[64];
 	CalculateW (lastBlock, lastW);
 
-	uint32_t * nonce = (uint32_t *)(b+320);
+	uint32_t * nonce = (uint32_t *)(b+320); // our nonce is place in memory, where is b after 320 bytes (characters)
 	(*nonce) += id_thread*throughput;
 
 	char addr[53];
@@ -204,13 +210,14 @@ Orignal is sensei of crypto ;)
 			FoundNonce=*nonce;
 		 //	free(hash);
 		 //	free(b);
+		 	// From there place we get a nonce, for some one a byte.
 		 	return true;
 		 }
 
 
 		(*nonce)++;
 		hashescounter++;
-		if (found)
+		if (found) // for another threads
 		{
 	//		free(hash);
 	//		free(b);
@@ -225,14 +232,14 @@ Orignal is sensei of crypto ;)
 
 
 void usage(void){
-	const constexpr char * help="vain pattern [options]\n"
+	constexpr auto help="vain pattern [options]\n"
 	"-h --help help menu\n"
 	"-r --reg  regexp instead just text pattern\n"
 	"--threads -t (default count of system)\n"
-	"--signature -s (signature type)\n"
-	"-o --output output file(default private.dat)\n"
-	"--usage usage\n"
-	//"--prefix -p\n"
+//"--signature -s (signature type)\n"
+	"-o --output output file(default " DEF_OUT_FILE ")\n"
+//"--usage usage\n"
+//"--prefix -p\n"
 	"";
 	puts(help);
 }
@@ -246,18 +253,18 @@ void parsing(int argc, char ** args){
 		{"threads", required_argument, 0, 't'},
 		{"signature", required_argument,0,'s'},
 		{"output", required_argument,0,'o'},
-		{"usage", no_argument,0,0},
+		//{"usage", no_argument,0,0},
 		{0,0,0,0}
 	};
 
 	int c;
 	while( (c=getopt_long(argc,args, "hrt:s:o:", long_options, &option_index))!=-1){
 		switch(c){
-			case 0:
-				if ( std::string(long_options[option_index].name) == std::string("usage") ){
-					usage();
-					exit(1);
-				}
+			//case 0:
+			//	if ( std::string(long_options[option_index].name) == std::string("usage") ){
+			//		usage();
+			//		exit(1);
+			//	}
 			case 'h':
 				usage();
 				exit(0);
@@ -277,7 +284,7 @@ void parsing(int argc, char ** args){
 			case '?':
 				std::cerr << "Undefined argument" << std::endl;
 			default:
-				std::cerr << args[0] << " --usage / --help" << std::endl;
+				std::cerr << args[0] << "--help" << std::endl;
 				exit(1);
 				break;
 		}
@@ -295,7 +302,9 @@ int main (int argc, char * argv[])
 		usage();
 		return 0;
 	}
-	parsing( argc > 2 ? argc-1 : argc, argc > 2 ? argv+1 : argv);
+	parsing( argc > 2 ? argc-1 : argc, argc > 2 ? argv+1 : argv); // parsing is was there.
+	// if argc size more than 2. nameprogram is 1. and 2 is prefix. if not there is will be flags like regex
+	// TODO: ?
 	//
 	if(!options.reg && !check_prefix( argv[1] ))
 	{
@@ -323,9 +332,49 @@ int main (int argc, char * argv[])
 		return 0;
 	}
 ///////////////
+// if threads less than 0, then we get from system count of CPUs cores
+	if(options.threads <= 0)
+	{
+	 options.threads = std::thread::hardware_concurrency(); // thx for acetone. lol
+//
+//#if defined(WIN32)
+//		SYSTEM_INFO siSysInfo;
+//		GetSystemInfo(&siSysInfo);
+//		options.threads = siSysInfo.dwNumberOfProcessors;
+//#elif defined(_SC_NPROCESSORS_CONF)
+//		options.threads = sysconf(_SC_NPROCESSORS_CONF);
+//#elif defined(HW_NCPU)
+//		int req[] = { CTL_HW, HW_NCPU };
+//		size_t len = sizeof(options.threads);
+//		v = sysctl(req, 2, &options.threads, &len, NULL, 0);
+//#else
+//		options.threads = 1;
+//#endif
+	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Isntead proccess flipper?
+	if ( !std::regex_match( std::string(argv[1]), std::regex("[a-zA-Z0-9\\.]{1,}")) ) {
+				std::cerr << "Please, change the outputfile name" << std::endl;
+	}
 	auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
+	// IDK type, and don't want to check. so...
+	auto createDumpFile = [/*keys*/](std::string outFile, i2p::data::PrivateKeys keys){
+			std::cout <<" Create a outFile " << outFile << std::endl;
+			std::ofstream f(outFile, std::ofstream::binary | std::ofstream:: out);
+			if (!f) {
+				std::cerr << "Can't to create a dump file before search address" << std::endl;
+				exit(1);
+			}
+			size_t len = keys.GetFullLen ();
+			uint8_t * buf = new uint8_t[len];
+			len = keys.ToBuffer (buf, len);
+			f.write ((char *)buf, len);
+			delete[] buf;
+		}; // is double of code. we can found simillar in keygen.cpp. WE would to create a library like 
+		// libi2pdtools
+		// TODO: create libi2pd_tools
+	// If file not exists we create a dump file. (a bug was found in issues)
 	switch(options.signature)
 	{
 		case i2p::data::SIGNING_KEY_TYPE_DSA_SHA1:
@@ -360,59 +409,64 @@ int main (int argc, char * argv[])
 		case i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256:
 		break;
 	}
-
+// there we gen key to buffer. That we mem allocate...
 	KeyBuf = new uint8_t[keys.GetFullLen()];
 	keys.ToBuffer (KeyBuf, keys.GetFullLen ());
-
-	if(options.threads <= 0)
-	{
-#if defined(WIN32)
-		SYSTEM_INFO siSysInfo;
-		GetSystemInfo(&siSysInfo);
-		options.threads = siSysInfo.dwNumberOfProcessors;
-#elif defined(_SC_NPROCESSORS_CONF)
-		options.threads = sysconf(_SC_NPROCESSORS_CONF);
-#elif defined(HW_NCPU)
-		int req[] = { CTL_HW, HW_NCPU };
-		size_t len = sizeof(options.threads);
-		v = sysctl(req, 2, &options.threads, &len, NULL, 0);
-#else
-		options.threads = 1;
-#endif
-	}
-
+/// there was some things for cpu 665% usage, but is not helpful even
 	std::cout << "Start vanity generator in " << options.threads << " threads" << std::endl;
-
-	unsigned short attempts = 0;
+// there we start to change byte in our private key. we can change another bytes too 
+// but we just change 1 byte in all key. So. TODO: change all bytes not one?
+	unsigned short attempts = 0;// it can be disabled, it's just for a statistic. For CPU this is a trash?
 	while(!found)
 	{//while
 		{//stack(for destructors(vector/thread))
 
 			std::vector<std::thread> threads(options.threads);
-			unsigned long long thoughtput = 0x4F4B5A37;
+			unsigned long long thoughtput = 0x4F4B5A37; // is a magic number. 
 
 			for ( unsigned int j = options.threads;j--;)
 			{
+				// our buf is our key, but in uint8 type, unsigned integ... another argument
+				// is our prefix that we search in address
+				// and j is magic number, is thread id. 
+				// thoughtput is our magic number that we increment on 1000 everytime
+				// so we just change a one a byte in key and convert private key to address
+				// after we check it.
 				threads[j] = std::thread(thread_find,KeyBuf,argv[1],j,thoughtput);
-				thoughtput+=1000;
+				thoughtput+=1000; 
 			}//for
 
+			//There will be proccessFlipper by accetone
+			// if I correctly understand it's drop a payload things in a prefix/search data
+			// or simmilar. We can just use regex. I would to use regex
+		
+			// So I put it ^^^
 			for(unsigned int j = 0; j < (unsigned int)options.threads;j++)
 				threads[j].join();
 
 			if(FoundNonce == 0)
 			{
-				RAND_bytes( KeyBuf+MutateByte , 90 );
+				RAND_bytes( KeyBuf+MutateByte , 90 ); // FoundNonce is
 				std::cout << "Attempts #" << ++attempts << std::endl;
 			}
 
 		}//stack
 	}//while
-
+	// before we write result we would to create private.dat a file. dump file. we can use for it keygen
+	// so.
 	memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
 	std::cout << "Hashes: " << hashescounter << std::endl;
 
-	if(options.outputpath.size() == 0) options.outputpath="private.dat";
+	// IDK. what for acetone change this line to if (options.output...empty() ... assign
+	// cplusplus.com/reference/string/string/assign yes we can. but I would don't change this
+	//if(options.outputpath.size() == 0) options.outputpath = DEF_OUT_FILE;
+	if ( options . outputpath . empty () ) options . outputpath . assign ( DEF_OUT_FILE ) ;
+
+	// there we generate a key, like as in keygen.cpp
+	// before a mining we would to create a dump file
+	
+	std::cout << "outpath for a now: " << options.outputpath << std::endl;
+	if( ! boost::filesystem::exists(options.outputpath) ) createDumpFile(options.outputpath, keys);
 
 	std::ofstream f (options.outputpath, std::ofstream::binary | std::ofstream::out);
 	if (f)
