@@ -79,6 +79,13 @@ or
 | RED25519-SHA512                      | 11     |
 
 For more information on the types of signatures, see the [documentation](https://i2pd.readthedocs.io/en/latest/user-guide/tunnels/#signature-types).
+### vain
+
+Vanity generation address.
+
+#### Usage
+
+./vain --usage
 
 #### Time to Generate on a 2.70GHz Processor
 | characters| time to generate (approx.) |
@@ -143,3 +150,41 @@ Send output of auth_string to http://reg.i2p/add and http://stats.i2p/i2p/addkey
 ### x25519
 
 Generate key pair with output in base64 encoding. Now the x25519 keys are used for authentication with an encrypted LeaseSet.
+
+### famtool
+[this is program for works with family of routers in i2p-network. ](https://i2pd.readthedocs.io/en/latest/user-guide/family/)
+    
+usage: ```./famtool [-h] [-v] [-g -n family -c family.crt -k family.pem] [-s -n family -k family.pem -i router.keys -f router.info] [-V -c family.crt -f router.info]```
+    
+generate a new family signing key for family called ``i2pfam''
+```./famtool -g -n i2pfam -c myfam.crt -k myfam.pem```
+    
+sign a router info with family signing key
+```./famtool -s -n i2pfam -k myfam.pem -i router.keys -f router.info```
+    
+verify signed router.info
+```./famtool -V -n i2pfam -c myfam.pem -f router.info```
+#### Example of usage
+    $ ./famtool -g -n i2pfam -c myfam.crt -k myfam.pem
+    family i2pfam made
+    $ cat myfam.crt
+    -----BEGIN CERTIFICATE-----
+    MIIB3TCCAYOgAwIBAgIBADAKBggqhkjOPQQDAjB4MQswCQYDVQQGEwJYWDELMAkG
+    A1UECAwCWFgxCzAJBgNVBAcMAlhYMR4wHAYDVQQKDBVJMlAgQW5vbnltb3VzIE5l
+    dHdvcmsxDzANBgNVBAsMBmZhbWlseTEeMBwGA1UEAwwVaTJwZmFtLmZhbWlseS5p
+    MnAubmV0MB4XDTIzMDczMTE5MjQ1MFoXDTMzMDcyODE5MjQ1MFoweDELMAkGA1UE
+    BhMCWFgxCzAJBgNVBAgMAlhYMQswCQYDVQQHDAJYWDEeMBwGA1UECgwVSTJQIEFu
+    b255bW91cyBOZXR3b3JrMQ8wDQYDVQQLDAZmYW1pbHkxHjAcBgNVBAMMFWkycGZh
+    bS5mYW1pbHkuaTJwLm5ldDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABLejNp1Y
+    1tnMGFaUIuzNpNL8B9KvaeSSh+OWhRcHn2x1D8TPCVA4IMS0jiMIodCcdyTmz0Qg
+    SXsWDqT2CbBMENQwCgYIKoZIzj0EAwIDSAAwRQIgU58CeHXlluPZNxpmxb7HSHsJ
+    STCA8C946oas+8uLU+MCIQDe6Km/h8w+oCh+j6UHobN0EAVtQPQGwkq2XXs1jqX2
+    bQ==
+    -----END CERTIFICATE-----
+    $ cat myfam.pem
+    -----BEGIN EC PRIVATE KEY-----
+    MHcCAQEEIAFA82vZzZN8nZIOVnadSS73G2NNc5pUsh4qmpK2M0nsoAoGCCqGSM49
+    AwEHoUQDQgAEt6M2nVjW2cwYVpQi7M2k0vwH0q9p5JKH45aFFwefbHUPxM8JUDgg
+    xLSOIwih0Jx3JObPRCBJexYOpPYJsEwQ1A==
+    -----END EC PRIVATE KEY-----
+
