@@ -353,22 +353,7 @@ int main (int argc, char * argv[])
 	static std::string outPutFileName  = options.outputpath;
 	auto doSearch = [argc,argv] () {
      	 auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
-     	 // IDK type, and don't want to check. so...
-     	 auto createDumpFile = [/*keys*/](std::string outFile, i2p::data::PrivateKeys keys){
-     			std::cout <<" Create a outFile " << outFile << std::endl;
-     			std::ofstream f(outFile, std::ofstream::binary | std::ofstream:: out);
-     			if (!f) {
-     				std::cerr << "Can't to create a dump file before search address" << std::endl;
-     				exit(1);
-     			}
-     			size_t len = keys.GetFullLen ();
-     			uint8_t * buf = new uint8_t[len];
-     			len = keys.ToBuffer (buf, len);
-     			f.write ((char *)buf, len);
-     			delete[] buf;
-     		}; // is double of code. we can found simillar in keygen.cpp. WE would to create a library like 
-     		// libi2pdtools
-     		// TODO: create libi2pd_tools
+     	 // TODO: create libi2pd_tools
      	 // If file not exists we create a dump file. (a bug was found in issues)
      	 switch(options.signature)
      	 {
@@ -441,7 +426,8 @@ int main (int argc, char * argv[])
      
      			if(FoundNonce == 0)
      			{
-     				RAND_bytes( KeyBuf+MutateByte , 90 ); // FoundNonce is
+     	 			keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
+     				//RAND_bytes( KeyBuf+MutateByte , 90 ); // FoundNonce is
      				std::cout << "Attempts #" << ++attempts << std::endl;
      			}
      
@@ -456,7 +442,12 @@ int main (int argc, char * argv[])
      	// cplusplus.com/reference/string/string/assign yes we can. but I would don't change this
      	//if(options.outputpath.size() == 0) options.outputpath = DEF_OUT_FILE;
 	options.outputpath = options.outputpath + std::to_string(foundKeys) + std::string(".dat");
-
+     	do
+	{
+		options.outputpath.assign(outPutFileName);
+		options.outputpath = options.outputpath + std::to_string(foundKeys) + std::string(".dat");
+		foundKeys++;
+	}while(  boost::filesystem::exists(options.outputpath) ); 
 	//if ( ! boost::algorithm::ends_with(options.outputpath, ".dat") ) 
 	//	options.outputpath = options.outputpath + ".dat";
      
@@ -464,7 +455,6 @@ int main (int argc, char * argv[])
      	// before a mining we would to create a dump file
      	
      	std::cout << "outpath for a now: " << options.outputpath << std::endl;
-     	if( ! boost::filesystem::exists(options.outputpath) ) createDumpFile(options.outputpath, keys);
      
      	std::ofstream f (options.outputpath, std::ofstream::binary | std::ofstream::out);
      	if (f)
@@ -474,7 +464,7 @@ int main (int argc, char * argv[])
      	}
      	else
      		std::cout << "Can't create file " << options.outputpath << std::endl;
-     
+     	return 0;
      }; // void doSearch lamda
 
      do {
