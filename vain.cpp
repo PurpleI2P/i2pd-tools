@@ -188,14 +188,11 @@ Orignal is sensei of crypto ;)
 		//bool result = options.reg ? !NotThat(addr, &options.regex) : !NotThat(addr,prefix);
 
 		if(	( options.reg ? !NotThat(addr, options.regex) : !NotThat(addr,prefix) ) )
-//		if(result)
 		{
 		 	ByteStreamToBase32 ((uint8_t*)hash, 32, addr, 52);
 			std::cout << "Address found " << addr << " in " << id_thread << std::endl;
 			found=true;
 			FoundNonce=*nonce;
-		 //	free(hash);
-		 //	free(b);
 		 	// From there place we get a nonce, for some one a byte.
 		 	return true;
 		 }
@@ -203,10 +200,8 @@ Orignal is sensei of crypto ;)
 
 		(*nonce)++;
 		hashescounter++;
-		if (found) // for another threads
+		if (found) // for another threads (?)
 		{
-	//		free(hash);
-	//		free(b);
 			break;
 		}
 	}//while
@@ -224,8 +219,6 @@ void usage(void){
 	"--threads -t (default count of system)\n"
 //"--signature -s (signature type)\n"
 	"-o --output output file(default " DEF_OUT_FILE ")\n"
-//"--usage usage\n"
-//"--prefix -p\n"
 	"--multiplymode -m - multiple addresses search"
 	"";
 	puts(help);
@@ -241,18 +234,12 @@ void parsing(int argc, char ** args){
 		{"signature", required_argument,0,'s'},
 		{"output", required_argument,0,'o'},
 		{"multiplymode", no_argument, 0, 'm'},
-		//{"usage", no_argument,0,0},
 		{0,0,0,0}
 	};
 
 	int c;
 	while( (c=getopt_long(argc,args, "hrt:s:o:m", long_options, &option_index))!=-1){
 		switch(c){
-			//case 0:
-			//	if ( std::string(long_options[option_index].name) == std::string("usage") ){
-			//		usage();
-			//		exit(1);
-			//	}
 			case 'm':
 				multipleSearchMode=true;
 				break;
@@ -296,23 +283,17 @@ int main (int argc, char * argv[])
 	parsing( argc > 2 ? argc-1 : argc, argc > 2 ? argv+1 : argv); // parsing is was there.
 	// if argc size more than 2. nameprogram is 1. and 2 is prefix. if not there is will be flags like regex
 	// TODO: ?
-	//
 	if(!options.reg && !check_prefix( argv[1] ))
 	{
 		std::cout << "Not correct prefix(just string)" << std::endl;
 		return 1;
 	}else{
 		options.regex=std::regex(argv[1]);
-//		int ret = regcomp( &options.regex, argv[1], REG_EXTENDED );
-//		if( ret != 0 ){
-//			std::cerr << "Can't create regexp pattern from " << argv[1] << std::endl;
-//			return 1;
-//		}
 	}
 // https://github.com/PurpleI2P/i2pd/blob/ae5239de435e1dcdff342961af9b506f60a494d4/libi2pd/Crypto.h#L310
 //// init and terminate
 //	void InitCrypto (bool precomputation, bool aesni, bool avx, bool force);
-// By default false to all.
+// By default false to all. But on much proccessors some things will be enabled. SO, TODO
 	i2p::crypto::InitCrypto (PRECOMPUTATION_CRYPTO, AESNI_CRYPTO, AVX_CRYPTO, FORCE_CRYPTO);
 	options.signature = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
 ///////////////
@@ -327,20 +308,6 @@ int main (int argc, char * argv[])
 	if(options.threads <= 0)
 	{
 	 options.threads = std::thread::hardware_concurrency(); // thx for acetone. lol
-//
-//#if defined(WIN32)
-//		SYSTEM_INFO siSysInfo;
-//		GetSystemInfo(&siSysInfo);
-//		options.threads = siSysInfo.dwNumberOfProcessors;
-//#elif defined(_SC_NPROCESSORS_CONF)
-//		options.threads = sysconf(_SC_NPROCESSORS_CONF);
-//#elif defined(HW_NCPU)
-//		int req[] = { CTL_HW, HW_NCPU };
-//		size_t len = sizeof(options.threads);
-//		v = sysctl(req, 2, &options.threads, &len, NULL, 0);
-//#else
-//		options.threads = 1;
-//#endif
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -352,6 +319,7 @@ int main (int argc, char * argv[])
      	if ( options . outputpath . empty () ) options . outputpath . assign ( DEF_OUT_FILE ) ;
 	static std::string outPutFileName  = options.outputpath;
 	auto doSearch = [argc,argv] () {
+	 found = false;
      	 auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
      	 // TODO: create libi2pd_tools
      	 // If file not exists we create a dump file. (a bug was found in issues)
@@ -423,12 +391,12 @@ int main (int argc, char * argv[])
      			// So I put it ^^^
      			for(unsigned int j = 0; j < (unsigned int)options.threads;j++)
      				threads[j].join();
-     
      			if(FoundNonce == 0)
      			{
-     	 			keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
+     	 			//keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
      				//RAND_bytes( KeyBuf+MutateByte , 90 ); // FoundNonce is
-     				std::cout << "Attempts #" << ++attempts << std::endl;
+     				std::cout << "(Generate a new keypair) Attempts #" << ++attempts << std::endl;
+				return 1;
      			}
      
      		}//stack
@@ -447,7 +415,9 @@ int main (int argc, char * argv[])
 		options.outputpath.assign(outPutFileName);
 		options.outputpath = options.outputpath + std::to_string(foundKeys) + std::string(".dat");
 		foundKeys++;
+		//printf("foundKeys = %d\n", foundKeys);
 	}while(  boost::filesystem::exists(options.outputpath) ); 
+	//puts("do while cycle break");
 	//if ( ! boost::algorithm::ends_with(options.outputpath, ".dat") ) 
 	//	options.outputpath = options.outputpath + ".dat";
      
@@ -469,11 +439,14 @@ int main (int argc, char * argv[])
 
      do {
 		doSearch();
-		foundKeys++;
+		if(found) 
+		{
+			//TODO: an another variable for file count and found keys as found keys by one runs
+			//foundKeys++;
+		}
 		options.outputpath.assign(outPutFileName);
-		found = false;
 		FoundNonce = 0;
-     } while(multipleSearchMode);
+     } while(multipleSearchMode || !found);
 
      i2p::crypto::TerminateCrypto ();
      return 0;

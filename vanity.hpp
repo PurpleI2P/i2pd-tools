@@ -61,6 +61,7 @@
 // Global vars
 static bool found=false;
 static bool multipleSearchMode = false;
+//TODO: an another variable for file count and found keys as found keys by one runs
 static unsigned int foundKeys = 0;
 static size_t MutateByte;
 
