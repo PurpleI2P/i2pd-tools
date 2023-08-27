@@ -405,6 +405,10 @@ int main (int argc, char * argv[])
      			{
      	 			//keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
      				//RAND_bytes( KeyBuf+MutateByte , 90 ); // FoundNonce is
+
+				for (unsigned i = options.threads-1;i--;)
+     		 			delete [] KeyBufs[i];
+				delete [] KeyBufs;
      				std::cout << "(Generate a new keypair) Attempts #" << ++attempts << std::endl;
 				return 1;
      			}
