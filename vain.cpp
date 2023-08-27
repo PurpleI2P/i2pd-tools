@@ -16,7 +16,7 @@ static struct{
         std::regex regex;
 
 }options;
-
+static unsigned short attempts = 0;// it can be disabled, it's just for a statistic. For CPU this is a trash?
 
 static void inline CalculateW (const uint8_t block[64], uint32_t W[64])
 {
@@ -371,7 +371,6 @@ int main (int argc, char * argv[])
      	std::cout << "Start vanity generator in " << options.threads << " threads" << std::endl;
      // there we start to change byte in our private key. we can change another bytes too 
      // but we just change 1 byte in all key. So. TODO: change all bytes not one?
-     	unsigned short attempts = 0;// it can be disabled, it's just for a statistic. For CPU this is a trash?
      	while(!found)
      	{//while
      		{//stack(for destructors(vector/thread))
