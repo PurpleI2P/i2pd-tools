@@ -67,7 +67,7 @@ static size_t MutateByte;
 
 static uint32_t FoundNonce=0;
 
-static uint8_t * KeyBuf;
+//static uint8_t ** KeyBufs;
 
 //static uint8_t * PaddingBuf;
 static unsigned long long hashescounter;
