@@ -7,6 +7,7 @@
 //#include<format> // is not supports for me
 
 // some global vars in vanitygen.hpp
+static unsigned short fKeyId = 0;
 static struct{
         bool reg=false;
         int threads=-1;
@@ -15,7 +16,7 @@ static struct{
         std::regex regex;
 
 }options;
-
+static unsigned short attempts = 0;// it can be disabled, it's just for a statistic. For CPU this is a trash?
 
 static void inline CalculateW (const uint8_t block[64], uint32_t W[64])
 {
@@ -194,6 +195,7 @@ Orignal is sensei of crypto ;)
 			found=true;
 			FoundNonce=*nonce;
 		 	// From there place we get a nonce, for some one a byte.
+			fKeyId = id_thread;
 		 	return true;
 		 }
 
@@ -320,7 +322,6 @@ int main (int argc, char * argv[])
 	static std::string outPutFileName  = options.outputpath;
 	auto doSearch = [argc,argv] () {
 	 found = false;
-     	 auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
      	 // TODO: create libi2pd_tools
      	 // If file not exists we create a dump file. (a bug was found in issues)
      	 switch(options.signature)
@@ -358,13 +359,18 @@ int main (int argc, char * argv[])
      		break;
      	}
      // there we gen key to buffer. That we mem allocate...
-     	KeyBuf = new uint8_t[keys.GetFullLen()];
-     	keys.ToBuffer (KeyBuf, keys.GetFullLen ());
+        const auto keys_len = i2p::data::PrivateKeys::CreateRandomKeys (options.signature).GetFullLen(); // is will be constant. so calculate every time is a bad way
+     	auto KeyBufs = new uint8_t*[options.threads];//[keys_len];
+	for(auto i = options.threads-1; i--;) {
+		KeyBufs[i] = new uint8_t[keys_len];
+		auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
+     		keys.ToBuffer (KeyBufs[i], keys_len);
+	}
+	
      /// there was some things for cpu 665% usage, but is not helpful even
      	std::cout << "Start vanity generator in " << options.threads << " threads" << std::endl;
      // there we start to change byte in our private key. we can change another bytes too 
      // but we just change 1 byte in all key. So. TODO: change all bytes not one?
-     	unsigned short attempts = 0;// it can be disabled, it's just for a statistic. For CPU this is a trash?
      	while(!found)
      	{//while
      		{//stack(for destructors(vector/thread))
@@ -380,7 +386,10 @@ int main (int argc, char * argv[])
      				// thoughtput is our magic number that we increment on 1000 everytime
      				// so we just change a one a byte in key and convert private key to address
      				// after we check it.
-     				threads[j] = std::thread(thread_find,KeyBuf,argv[1],j,thoughtput);
+				auto n = j != 0 ? j-1 : 0  ;
+				std::cout << "Use " << n << " key" << std::endl;
+				
+     				threads[j] = std::thread(thread_find,KeyBufs[ n ],argv[1],j,thoughtput);
      				thoughtput+=1000; 
      			}//for
      
@@ -395,6 +404,10 @@ int main (int argc, char * argv[])
      			{
      	 			//keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
      				//RAND_bytes( KeyBuf+MutateByte , 90 ); // FoundNonce is
+
+				for (unsigned i = options.threads-1;i--;)
+     		 			delete [] KeyBufs[i];
+				delete [] KeyBufs;
      				std::cout << "(Generate a new keypair) Attempts #" << ++attempts << std::endl;
 				return 1;
      			}
@@ -403,6 +416,8 @@ int main (int argc, char * argv[])
      	}//while
      	// before we write result we would to create private.dat a file. dump file. we can use for it keygen
      	// so.
+	// std::cout << fKeyId << std::endl;
+	auto KeyBuf = KeyBufs[fKeyId - 1 < 0 ? 0 : fKeyId - 1];
      	memcpy (KeyBuf + MutateByte, &FoundNonce, 4);
      	std::cout << "Hashes: " << hashescounter << std::endl;
      
@@ -429,8 +444,10 @@ int main (int argc, char * argv[])
      	std::ofstream f (options.outputpath, std::ofstream::binary | std::ofstream::out);
      	if (f)
      	{
-     		f.write ((char *)KeyBuf, keys.GetFullLen ());
-     		delete [] KeyBuf;
+     		f.write ((char *)KeyBuf, keys_len);
+		for (unsigned i = options.threads-1;i--;)
+     		 delete [] KeyBufs[i];
+		delete [] KeyBufs;
      	}
      	else
      		std::cout << "Can't create file " << options.outputpath << std::endl;
