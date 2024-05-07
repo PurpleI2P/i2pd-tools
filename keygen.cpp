@@ -12,7 +12,7 @@ int main (int argc, char * argv[])
 		std::cout << "Usage: keygen filename <signature type>" << std::endl;
 		return -1;
 	}
-	i2p::crypto::InitCrypto (false, true, true, false);
+	i2p::crypto::InitCrypto (false, true, false);
 	i2p::data::SigningKeyType type = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
 	if (argc > 2) {
 		std::string str(argv[2]);

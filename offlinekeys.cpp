@@ -14,7 +14,7 @@ int main (int argc, char * argv[])
 		std::cout << "Usage: offlinekeys <output file> <keys file> <signature type> <days>" << std::endl;
 		return -1;
 	}
-	i2p::crypto::InitCrypto (false, true, true, false);
+	i2p::crypto::InitCrypto (false, true, false);
 
 	std::string fname(argv[2]);
 	i2p::data::PrivateKeys keys;

@@ -197,7 +197,7 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
-	InitCrypto(false, true, true, false);
+	InitCrypto(false, true, false);
 
 	if(!fam.size()) {
 		// no family name
@@ -319,7 +319,10 @@ int main(int argc, char * argv[])
 			delete [] k;
 		}
 
-		LocalRouterInfo ri(infofile);
+        RouterInfo routerInfo(infofile);
+		LocalRouterInfo ri;
+        ri.Update (routerInfo.GetBuffer (), routerInfo.GetBufferLen ());        
+
 		auto ident = ri.GetIdentHash();
 
 
@@ -365,7 +368,9 @@ int main(int argc, char * argv[])
 
 		if (verbose) std::cout << "load " << infofile << std::endl;
 
-		LocalRouterInfo ri(infofile);
+        RouterInfo routerInfo(infofile);
+		LocalRouterInfo ri;
+        ri.Update (routerInfo.GetBuffer (), routerInfo.GetBufferLen ());
 		auto sig = ri.GetProperty(ROUTER_INFO_PROPERTY_FAMILY_SIG);
 		if (ri.GetProperty(ROUTER_INFO_PROPERTY_FAMILY) != fam) {
 			std::cout << infofile << " does not belong to " << fam << std::endl;

@@ -18,7 +18,7 @@ int main (int argc, char * argv[])
 	if (argc < 3) {	help(); return -1;}
 	std::string arg = argv[1];
 
-	i2p::crypto::InitCrypto (false, true, true, false);
+	i2p::crypto::InitCrypto (false, true, false);
 	i2p::data::PrivateKeys keys;
 
 	if (arg == "step1") {

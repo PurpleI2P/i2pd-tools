@@ -296,7 +296,7 @@ int main (int argc, char * argv[])
 //// init and terminate
 //	void InitCrypto (bool precomputation, bool aesni, bool avx, bool force);
 // By default false to all. But on much proccessors some things will be enabled. SO, TODO
-	i2p::crypto::InitCrypto (PRECOMPUTATION_CRYPTO, AESNI_CRYPTO, AVX_CRYPTO, FORCE_CRYPTO);
+	i2p::crypto::InitCrypto (PRECOMPUTATION_CRYPTO, AESNI_CRYPTO, FORCE_CRYPTO);
 	options.signature = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
 ///////////////
 //For while
