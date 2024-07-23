@@ -14,7 +14,8 @@ int main(int argc, char * argv[])
 	auto ident = std::make_shared<i2p::data::IdentityEx>();
 	if (ident->FromBase64 (base64))
 	{
-		if (ident->GetSigningKeyType () == i2p::data::SIGNING_KEY_TYPE_REDDSA_SHA512_ED25519)
+		if (ident->GetSigningKeyType () == i2p::data::SIGNING_KEY_TYPE_REDDSA_SHA512_ED25519 ||
+            ident->GetSigningKeyType () == i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519)
 		{
 			i2p::data::BlindedPublicKey blindedKey (ident);
 			std::cout << "b33 address: " << blindedKey.ToB33 () << ".b32.i2p" << std::endl;
