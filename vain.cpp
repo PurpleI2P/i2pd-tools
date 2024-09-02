@@ -2,7 +2,7 @@
 #include<regex>
 #include<getopt.h>
 #include<string>
-#include<boost/filesystem.hpp>
+#include<filesystem>
 //#include<boost/algorithm/string/predicate.hpp>
 //#include<format> // is not supports for me
 
@@ -428,7 +428,7 @@ int main (int argc, char * argv[])
 		options.outputpath = options.outputpath + std::to_string(foundKeys) + std::string(".dat");
 		foundKeys++;
 		//printf("foundKeys = %d\n", foundKeys);
-	}while(  boost::filesystem::exists(options.outputpath) ); 
+	}while(  std::filesystem::exists(options.outputpath) ); 
 	//puts("do while cycle break");
 	//if ( ! boost::algorithm::ends_with(options.outputpath, ".dat") ) 
 	//	options.outputpath = options.outputpath + ".dat";
