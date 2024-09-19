@@ -45,9 +45,13 @@ else
 endif
 
 
-all: $(I2PD_LIB) vain keygen keyinfo famtool routerinfo regaddr regaddr_3ld i2pbase64 offlinekeys b33address regaddralias x25519 verifyhost 
+all: $(I2PD_LIB) vain keygen keyinfo famtool routerinfo regaddr regaddr_3ld i2pbase64 offlinekeys b33address regaddralias x25519 verifyhost autoconf
 vain:	vain.o $(I2PD_LIB)
 	$(CXX) -o vain $(LDFLAGS) vain.o $(LDLIBS)
+
+autoconf: autoconf.o $(I2PD_LIB)
+	$(CXX) -o autoconf $(DEFINES) $(LDFLAGS) autoconf.o $(LDLIBS)
+
 routerinfo: routerinfo.o $(I2PD_LIB)
 	$(CXX) -o routerinfo $(LDFLAGS) routerinfo.o $(LDLIBS) -latomic
 
@@ -103,7 +107,7 @@ clean-obj:
 	rm -f $(wildcard *.o)
 
 clean-bin:
-	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain
+	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain autoconf
 
 clean: clean-i2pd clean-obj clean-bin
 
