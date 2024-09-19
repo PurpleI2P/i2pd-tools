@@ -41,7 +41,7 @@ const std::map<std::string, AsksT> Texts = // maybe vector better
 				   //TODO: an another
 				   {"UseIPv6", "Использовать ipv6?"},
 				   {"UseIPv4", "Использовать ipv4?"},
-   				   {"BeFloodfill", "Быть флудфиллом?"},
+   				   {"BeFloodfillYN", "Быть флудфиллом?"},
 				   {"NoTransit", "Отключить транзит? (это уменьшит анонимность)"}
 		       }},
 		{"en", {
@@ -66,7 +66,7 @@ const std::map<std::string, AsksT> Texts = // maybe vector better
 				   //TODO: an another
 					{"UseIPv6", "Use ipv6?"},
 					{"UseIPv4", "Use ipv4?"},
-					{"BeFloodfill", "Be a floodfill?"},
+					{"BeFloodfillYN", "Be a floodfill?"},
 					{"NoTransit", "Disable transit? (this will reduce anonymity)"}
 		       }}	
 	};
@@ -130,41 +130,60 @@ main(void) {
 			// Asks
 			using namespace AutoConf;
 			[](std::ostringstream &conf, const std::string &lang) {
-				std::cout << AutoConf::Texts.at(lang).at("TunConfYN") << std::endl;
-				if (AskYN()) {
-					std::cout << AutoConf::Texts.at(lang).at("TunConf") << "\r\n";
-					std::string tunConf;
-					std::cin.ignore();
-					std::getline(std::cin, tunConf);
-					conf << "tunnels.path=" << tunConf << "\r\n";
-				}
 
-				std::cout << AutoConf::Texts.at(lang).at("TunnelsDirYN") << std::endl;
-				if (AskYN()) {
-					std::cout << AutoConf::Texts.at(lang).at("TunnelsDir") << "\r\n";
-					std::string tunnelsDir;
-					std::cin.ignore();
-					std::getline(std::cin, tunnelsDir);
-					conf << "tunnels.dir=" << tunnelsDir << "\r\n";
-				}
-
+				#define ASKYN_MACRO(A,B,C) { \
+					std::cout << AutoConf::Texts.at(lang).at(A) << std::endl; \
+					if(AskYN()) { \
+								std::cout << AutoConf::Texts.at(lang).at(B) << "\r\n"; \
+								std::string inp; \
+								std::cin.ignore(); \
+								std::getline(std::cin, inp); \ 
+								conf << C "=" << inp << "\r\n"; \ 
+					} \
+				};
+				ASKYN_MACRO("TunConfYN","TunConf","tunconf");
+				ASKYN_MACRO("TunnelsDirYN","TunnelsDir","tunnelsdir");
 				// TODO:
-				{
-					std::cout << AutoConf::Texts.at(lang).at("UseIPv6") << "\r\n";
-					bool useIPv6 = AskYN();
-					conf << "ipv6=" << (useIPv6 ? "true" : "false") << "\r\n";
-				}
+				/*
+					{"daemonYN", "Use daemon mode?"},
+					{"FamilyUsing", "Enter your last name or just hit enter."},
 
-				{
-					std::cout << AutoConf::Texts.at(lang).at("UseIPv4") << "\r\n";
-					bool useIPv4 = AskYN();
-					conf << "ipv4=" << (useIPv4 ? "true" : "false") << "\r\n";
+			*/
+				ASKYN_MACRO("certsdirYN","certsdir","certsdir");
+				ASKYN_MACRO("pidfileYN","pidfile","pidfile");
+				ASKYN_MACRO("logYN","log","log");
+				ASKYN_MACRO("loglevelYN","loglevel","loglevel");
+				#define ASK_BOOL(A,B) { \
+					std::cout << AutoConf::Texts.at(lang).at(A) << std::endl; \
+					bool v = AskYN();\
+					conf << B "=" << (v ? "true":"false") << "\r\n";\
 				}
+				ASK_BOOL("UseIPv6", "ipv6");
+				ASK_BOOL("UseIPv4", "ipv4");
+				ASK_BOOL("logCFLYN", "logclftime");
+				ASK_BOOL("daemonYN", "daemon");
+				#define ASK_TEXT(A, B) {\
+					std::cout << AutoConf::Texts.at(lang).at(A) << std::endl;\
+					std::string inp; std::cin.ignore(); std::getline(std::cin, inp);; if (inp.length() != 0) {\
+							conf << B "=" << inp << "\r\n";\
+					}\
+				}
+				ASK_TEXT("FamilyUsing","family");
+				ASK_BOOL("BeFloodfillYN", "floodflill");
+
+				/////
 			}(conf, lang);
 	}
 	std::cout << "Config: " << std::endl;
 	std::cout << conf.str() << std::endl;
-	std::ofstream confFile("i2pd_.conf"); 
+	//TODO: To Constexpr
+	std::cout << "Save File: (\"i2pd_.conf\"):";
+	std::string outFileName;
+	std::cin.ignore();  //maybe not need write everywhere cin.ignore() one time maybe will be enough
+	std::getline(std::cin, outFileName);  
+	//TODO: to constxpr
+	if (outFileName.length() == 0) outFileName = "i2pd_.conf";
+	std::ofstream confFile(outFileName); 
 	confFile << conf.str();
 	confFile.close();
 }
