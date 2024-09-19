@@ -5,6 +5,9 @@
 #include<map>
 #include<string>
 #include<fstream>
+#include<limits>
+#define CIN_CLEAR std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
 namespace AutoConf {
 namespace PreInitConfigs {
 	constexpr const char * yggOnlyConf = "ipv4=false\r\n"
@@ -14,6 +17,7 @@ namespace PreInitConfigs {
 										"ssu2.enabled=false\r\n"
 										"meshnets.yggdrasil=true\r\n";
 }
+
 //	Texts
 using AsksT = std::map<std::string, std::string>;
 const std::map<std::string, AsksT> Texts = // maybe vector better
@@ -42,7 +46,18 @@ const std::map<std::string, AsksT> Texts = // maybe vector better
 				   {"UseIPv6", "Использовать ipv6?"},
 				   {"UseIPv4", "Использовать ipv4?"},
    				   {"BeFloodfillYN", "Быть флудфиллом?"},
-				   {"NoTransit", "Отключить транзит? (это уменьшит анонимность)"}
+				   {"NoTransitYN", "Отключить транзит? (это уменьшит анонимность)"},
+				   {"Bandwidth", "Напиши пропускную способность (Enter для по умолчанию) [L-32kbs,O-256kbs,P-2048kbs,X-unlimited]"},
+				   {"Share", "Процент шары (Enter для по умолчанию) [0-100]"},
+				   //
+				   {"NTCPEnabledYN", "Использовать NTCP?"},
+				   {"NTCPPublishedYN", "Опубликовать IP В NTCP?"},
+				   {"NTCPPPort", "NTCP Порт. Либо энтер для пропуска"},
+				   {"NTCPPProxy", "NTCP Proxy, пример (socks://localhost:4545)  или энтер для поумолчанию (неиспользуется)"},
+				   {"SSUEnabledYN", "Использовать SSU?"},
+				   {"SSUPPort", "SSU Порт. Либо энтер для пропуска"},
+				   {"SSUProxy", "SSU Proxy, пример (socks://localhost:4545)  или энтер для поумолчанию (неиспользуется)"}
+
 		       }},
 		{"en", {
 		       		{"WelcomeText","Hello. Select type of config\r\n1 - clearnet\r\n2 - only yggdrasil"},
@@ -62,12 +77,23 @@ const std::map<std::string, AsksT> Texts = // maybe vector better
 					{"loglevel", "Enter log level (warn, info, none, critical, error, debug)"},
 					{"logCFLYN", "Use full CFL format for date in logs? Default is only time."},
 					{"daemonYN", "Use daemon mode?"},
-					{"FamilyUsing", "Enter your last name or just hit enter."},
+					{"FamilyUsing", "Enter your netfamily or just hit enter."},
 				   //TODO: an another
 					{"UseIPv6", "Use ipv6?"},
 					{"UseIPv4", "Use ipv4?"},
 					{"BeFloodfillYN", "Be a floodfill?"},
-					{"NoTransit", "Disable transit? (this will reduce anonymity)"}
+					{"NoTransitYN", "Disable transit? (this will reduce anonymity)"},
+					{"Bandwidth", "Write bandwidth (enter for default) [L-32kbs,O-256kbs,P-2048kbs,X-unlimited]"},
+					{"Share", "Share percents (enter for default) [0-100]"},
+				//
+					{"NTCPEnabledYN", "Use NTCP?"},
+					{"NTCPPublishedYN", "Publish IP in NTCP?"},
+					{"NTCPPPort", "NTCP Port or enter for auto port (random)"},
+					{"NTCPPProxy", "NTCP Proxy, example (socks://localhost:4545) or enter for default"},
+					{"SSUEnabledYN", "Use SSU?"},
+				   {"SSUPPort", "SSU Port or enter for auto port (random)"},
+				   {"SSUProxy", "SSU Proxy, example (socks://localhost:4545) or enter for default"}
+
 		       }}	
 	};
 
@@ -75,6 +101,7 @@ const std::map<std::string, AsksT> Texts = // maybe vector better
 bool AskYN(void) noexcept {
 	char answ; 
 	std::cout << " ? (y/n) ";
+	CIN_CLEAR;
 	std::cin >> answ;
         switch(answ) {
 		case 'y':
@@ -130,13 +157,12 @@ main(void) {
 			// Asks
 			using namespace AutoConf;
 			[](std::ostringstream &conf, const std::string &lang) {
-
 				#define ASKYN_MACRO(A,B,C) { \
 					std::cout << AutoConf::Texts.at(lang).at(A) << std::endl; \
 					if(AskYN()) { \
 								std::cout << AutoConf::Texts.at(lang).at(B) << "\r\n"; \
 								std::string inp; \
-								std::cin.ignore(); \
+								CIN_CLEAR; \
 								std::getline(std::cin, inp); \ 
 								conf << C "=" << inp << "\r\n"; \ 
 					} \
@@ -164,14 +190,30 @@ main(void) {
 				ASK_BOOL("daemonYN", "daemon");
 				#define ASK_TEXT(A, B) {\
 					std::cout << AutoConf::Texts.at(lang).at(A) << std::endl;\
-					std::string inp; std::cin.ignore(); std::getline(std::cin, inp);; if (inp.length() != 0) {\
+					std::string inp; CIN_CLEAR; std::getline(std::cin, inp); if (inp.length() > 0) {\
 							conf << B "=" << inp << "\r\n";\
 					}\
 				}
 				ASK_TEXT("FamilyUsing","family");
 				ASK_BOOL("BeFloodfillYN", "floodflill");
+				ASK_BOOL("NoTransitYN", "transit");
+				ASK_TEXT("Bandwidth","bandwidth");
+				ASK_TEXT("Share","share");
+				///// With sections
+				conf << "[ntcp2]\r\n";
+				ASK_BOOL("NTCPEnabledYN", "enabled");
+				ASK_BOOL("NTCPPublishedYN", "publish");
+				ASK_TEXT("NTCPPPort", "port");
+				ASK_TEXT("NTCPPProxy", "proxy");
+				conf << "[ssu2]\r\n";
+				ASK_BOOL("SSUEnabledYN", "enabled");
+				ASK_TEXT("SSUPPort", "port");
+				ASK_TEXT("SSUProxy", "proxy");
 
-				/////
+				#undef ASK_TEXT
+				#undef ASK_BOOL
+				#undef ASKYN_MACRO
+
 			}(conf, lang);
 	}
 	std::cout << "Config: " << std::endl;
@@ -179,7 +221,7 @@ main(void) {
 	//TODO: To Constexpr
 	std::cout << "Save File: (\"i2pd_.conf\"):";
 	std::string outFileName;
-	std::cin.ignore();  //maybe not need write everywhere cin.ignore() one time maybe will be enough
+	std::cin.clear();
 	std::getline(std::cin, outFileName);  
 	//TODO: to constxpr
 	if (outFileName.length() == 0) outFileName = "i2pd_.conf";
