@@ -188,3 +188,9 @@ verify signed router.info
     xLSOIwih0Jx3JObPRCBJexYOpPYJsEwQ1A==
     -----END EC PRIVATE KEY-----
 
+#### AutoConf
+A program for help create the config file for i2pd
+
+For a now a better way to manual write the config file
+
+For usage just run ./AutoConf or AutoConf.exe
