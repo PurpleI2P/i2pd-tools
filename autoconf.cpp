@@ -9,12 +9,13 @@
 #include<regex>
 
 #define CIN_CLEAR std::cin.clear(); std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
+#define HTTP_SUPPORTS_LANGUAGE "german, italian, polish, portuguese, russian, spanish, turkish, turkmen, ukrainian, uzbek"
 namespace AutoConf {
+	//
 	namespace Regexps {
 			//const std::regex port("\\d{1,5}");
 			std::regex path(R"([a-zA-Z0-9_\.\/\\]+)"); // (\w|\.|\\|\/)+
-			std::regex proxy("\\w+:\\/\\/(\\w|\\d|\\.|\\-)+\\:\\d+");
+			//std::regex proxy("\\w+:\\/\\/(\\w|\\d|\\.|\\-)+\\:\\d+");
 			std::regex any(".*");
 
 	}
@@ -65,8 +66,8 @@ const std::map<std::string, AsksT> Texts = // maybe vector better
 				   {"NTCPPProxy", "NTCP Proxy, пример (socks://localhost:4545)  или - для по умолчанию (неиспользуется)"},
 				   {"SSUEnabledYN", "Использовать SSU?"},
 				   {"SSUPPort", "SSU Порт. Либо - для пропуска"},
-				   {"SSUProxy", "SSU Proxy, пример (socks://localhost:4545)  или - для по умолчанию (неиспользуется)"}
-
+				   {"SSUProxy", "SSU Proxy, пример (socks://localhost:4545)  или - для по умолчанию (неиспользуется)"},
+				   {"HTTPLang", "Выбрите язык веб-интерфейса, либо - для опции по умолчанию (" HTTP_SUPPORTS_LANGUAGE ")" }
 		       }},
 		{"en", {
 		       		{"WelcomeText","Hello. Select type of config\r\n1 - clearnet\r\n2 - only yggdrasil"},
@@ -94,6 +95,7 @@ const std::map<std::string, AsksT> Texts = // maybe vector better
 					{"NoTransitYN", "Disable transit? (this will reduce anonymity)"},
 					{"Bandwidth", "Write bandwidth (- for default) [L-32kbs,O-256kbs,P-2048kbs,X-unlimited]"},
 					{"Share", "Share percents (- for default) [0-100]"},
+					{"HTTPLang", "Select Web-interface language or - for default (" HTTP_SUPPORTS_LANGUAGE ")" },
 				//
 					{"NTCPEnabledYN", "Use NTCP?"},
 					{"NTCPPublishedYN", "Publish IP in NTCP?"},
@@ -112,7 +114,6 @@ bool AskYN(void) noexcept {
 	std::cout << " ? (y/n) ";
 	std::cin >> answ;
 	CIN_CLEAR;
-	std::cout <<"answ: " << answ<<std::endl;;
         switch(answ) {
 		case 'y':
 		case 'Y':
@@ -156,7 +157,6 @@ bool IsOnlyYggdrasil(const std::string & lang) noexcept {
 
 int 
 main(void) {
-	std::cout << "RUn Program" << std::endl;
 	std::cout << "https://i2pd.readthedocs.io/en/latest/user-guide/configuration/\r\nhttps://github.com/PurpleI2P/i2pd/blob/openssl/contrib/i2pd.conf\r\n";
 	std::ostringstream conf; 
 	auto lang = AutoConf::GetLanguage();
@@ -171,11 +171,9 @@ main(void) {
 			using namespace AutoConf;
 			[](std::ostringstream &conf, const std::string &lang) {
 				#define ASKYN_MACRO(A,B,C, REGEX) { \
-					std::cout << "Cycle" << std::endl;\
 					std::cout << AutoConf::Texts.at(lang).at(A); \
 					if(AskYN()) { \
 								while(1) {\
-								std::cout << "Cycle1" << std::endl;\
 								std::cout << AutoConf::Texts.at(lang).at(B) << "\r\n"; \
 								std::string inp; \
 								std::cin >> inp;\ 
@@ -189,12 +187,11 @@ main(void) {
 								} \
 					}\
 				};
-				std::cout << "ASKYN" << std::endl;
 				ASKYN_MACRO("TunConfYN","TunConf","tunconf", AutoConf::Regexps::path);
 				ASKYN_MACRO("TunnelsDirYN","TunnelsDir","tunnelsdir",AutoConf::Regexps::path);
 				ASKYN_MACRO("certsdirYN","certsdir","certsdir",AutoConf::Regexps::path);
 				ASKYN_MACRO("pidfileYN","pidfile","pidfile",AutoConf::Regexps::path);
-				ASKYN_MACRO("logYN","log","log",AutoConf::Regexps::any);
+				//ASKYN_MACRO("logYN","log","log",AutoConf::Regexps::any);
 				ASKYN_MACRO("loglevelYN","loglevel","loglevel",AutoConf::Regexps::any); // TODO: word type
 				#define ASK_BOOL(A,B) { \
 					std::cout << AutoConf::Texts.at(lang).at(A) << std::endl; \
@@ -213,20 +210,22 @@ main(void) {
 					}\
 				}
 				ASK_TEXT("FamilyUsing","family");
-				ASK_BOOL("BeFloodfillYN", "floodflill");
-				ASK_BOOL("NoTransitYN", "transit");
+				ASK_BOOL("BeFloodfillYN", "floodfill");
+				ASK_BOOL("NoTransitYN", "notransit");
 				ASK_TEXT("Bandwidth","bandwidth");
 				ASK_TEXT("Share","share");
 				///// With sections
 				conf << "[ntcp2]\r\n";
 				ASK_BOOL("NTCPEnabledYN", "enabled");
-				ASK_BOOL("NTCPPublishedYN", "publish");
+				ASK_BOOL("NTCPPublishedYN", "published");
 				ASK_TEXT("NTCPPPort", "port");
 				ASK_TEXT("NTCPPProxy", "proxy");
 				conf << "[ssu2]\r\n";
 				ASK_BOOL("SSUEnabledYN", "enabled");
 				ASK_TEXT("SSUPPort", "port");
 				ASK_TEXT("SSUProxy", "proxy");
+				conf << "[http]\r\n";
+				ASK_TEXT("HTTPLang", "lang");
 				#undef ASK_TEXT
 				#undef ASK_BOOL
 				#undef ASKYN_MACRO
