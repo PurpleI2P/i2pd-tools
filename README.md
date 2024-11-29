@@ -26,7 +26,12 @@ Notice: git submodules are used so make sure to clone this repository recursivel
 
 ### Building
 
-    make
+```sh
+git submodule init && git submodule update
+git submodule update --init
+git pull --recurse-submodules
+make
+```
 
 ## Tools included
 
