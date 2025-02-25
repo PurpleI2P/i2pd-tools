@@ -197,7 +197,7 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
-	InitCrypto(false, true, false);
+	InitCrypto(false);
 
 	if(!fam.size()) {
 		// no family name

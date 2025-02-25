@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
 		usage(argv[0]);
 		return 1;
 	}
-	i2p::crypto::InitCrypto(false, true, false);
+	i2p::crypto::InitCrypto(false);
 	int opt;
 	bool ipv6 = false;
 	bool firewall = false;
