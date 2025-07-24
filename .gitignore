@@ -6,6 +6,7 @@
 *.o
 
 # built binaries
+autoconf
 keygen
 keyinfo
 famtool
