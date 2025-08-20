@@ -66,16 +66,16 @@ int main (int argc, char * argv[])
 			if(keys.FromBuffer (buf, len)) {
 				auto signatureLen = keys.GetPublic ()->GetSignatureLen ();
 				uint8_t * signature = new uint8_t[signatureLen];
-				char * sig = new char[signatureLen*2];
+				//char * sig = new char[signatureLen*2];
 				out << "#date=" << std::time(nullptr);
 				out << "#olddest=" << keys.GetPublic ()->ToBase64 ();
 				out << "#oldname=" << argv[4];
 				keys.Sign ((uint8_t *)out.str ().c_str (), out.str ().length (), signature);
-				auto len = i2p::data::ByteStreamToBase64 (signature, signatureLen, sig, signatureLen*2);
-				sig[len] = 0;
+				auto sig = i2p::data::ByteStreamToBase64 (signature, signatureLen);//, sig, signatureLen*2);
+				//sig[len] = 0;
 				out << "#oldsig=" << sig;
 				delete[] signature;
-				delete[] sig;
+				//delete[] sig;
 				std::cout << out.str () << std::endl;
 			} else
 				std::cout << "Failed to load keyfile " << argv[1] << std::endl;
@@ -108,13 +108,13 @@ int main (int argc, char * argv[])
 			if(keys.FromBuffer (buf, len)) {
 				auto signatureLen = keys.GetPublic ()->GetSignatureLen ();
 				uint8_t * signature = new uint8_t[signatureLen];
-				char * sig = new char[signatureLen*2];
+				//char * sig = new char[signatureLen*2];
 				keys.Sign ((uint8_t *)out.str ().c_str (), out.str ().length (), signature);
-				auto len = i2p::data::ByteStreamToBase64 (signature, signatureLen, sig, signatureLen*2);
-				sig[len] = 0;
+				auto sig = i2p::data::ByteStreamToBase64 (signature, signatureLen);//, sig, signatureLen*2);
+				//sig[len] = 0;
 				out << "#sig=" << sig;
 				delete[] signature;
-				delete[] sig;
+				//delete[] sig;
 				std::cout << out.str () << std::endl;
 			} else
 				std::cout << "Failed to load keyfile " << argv[1] << std::endl;
