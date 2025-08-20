@@ -57,17 +57,17 @@ int main(int argc, char * argv[])
 
     BoxKeys newKeys = getKeyPair();
 
-    const size_t len_out = 50;
-    char b64Public[len_out] = {0};
-    char b64Private[len_out] = {0};
+    //const size_t len_out = 50;
+    //char b64Public[len_out] = {0};
+    //char b64Private[len_out] = {0};
 
-    i2p::data::ByteStreamToBase64 (newKeys.PublicKey, len, b64Public, len_out);
+    auto b64Public = i2p::data::ByteStreamToBase64 (newKeys.PublicKey, len);//, b64Public, len_out);
 
     std::cout << "PublicKey: ";
     for (int i = 0; b64Public[i] != 0; ++i)
         std::cout << b64Public[i];
 
-    i2p::data::ByteStreamToBase64 (newKeys.PrivateKey, len, b64Private, len_out);
+    auto b64Private = i2p::data::ByteStreamToBase64 (newKeys.PrivateKey, len);//, b64Private, len_out);
 
     std::cout << "\nPrivateKey: ";
     for (int i = 0; b64Private[i] != 0; ++i)

@@ -51,7 +51,8 @@ int main (int argc, char * argv[])
 		uint8_t * signature = new uint8_t[signatureLen];
 
 		// validate signature
-		i2p::data::Base64ToByteStream(sig.c_str (), sig.length(), signature, signatureLen);
+		// size_t Base64ToByteStream (std::string_view base64Str, uint8_t * OutBuffer, size_t len);
+		i2p::data::Base64ToByteStream(sig, signature, signatureLen);
 		if (!Identity.Verify ((uint8_t *)hostNoSig.c_str (), hostNoSig.length (), signature))
 		{
 			std::cout << "Invalid destination signature." << std::endl;
@@ -85,13 +86,15 @@ int main (int argc, char * argv[])
 			std::string oldSig = oldSigCut.substr (0, pos);
 
 			// validate signature
-			i2p::data::Base64ToByteStream(oldSig.c_str (), oldSig.length(), signature, signatureLen);
+			i2p::data::Base64ToByteStream(oldSig, signature, signatureLen);
 			bool oldSignValid = OldIdentity.Verify ((uint8_t *)hostNoOldSig.c_str (), hostNoOldSig.length (), signature);
 
 			if(!oldSignValid)
 			{
 				std::cout << "Invalid old destination signature." << std::endl;
 				return 1;
+			} else {
+				std::cout << "Valid destination" << std::endl;
 			}
 		}
 	}

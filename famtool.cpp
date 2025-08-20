@@ -74,7 +74,7 @@ static std::shared_ptr<Verifier> LoadCertificate (const std::string& filename)
 						bn2buf (y, signingKey + 32, 32);
 						BN_free (x); BN_free (y);
 						verifier = std::make_shared<i2p::crypto::ECDSAP256Verifier>();
-			verifier->SetPublicKey (signingKey);
+						verifier->SetPublicKey (signingKey);
 					}
 				}
 				EC_KEY_free (ecKey);
@@ -113,11 +113,11 @@ static bool CreateFamilySignature (const std::string& family, const IdentHash& i
 					len += 32;
 					signer.Sign (buf, len, signature);
 					len = Base64EncodingBufferSize (64);
-					char * b64 = new char[len+1];
-					len = ByteStreamToBase64 (signature, 64, b64, len);
-					b64[len] = 0;
+					//char * b64 = new char[len+1];
+					auto b64 = ByteStreamToBase64 (signature, len);
+					//b64[len] = 0;
 					sig = b64;
-					delete[] b64;
+					//delete[] b64;
 				}
 				else
 					return false;
@@ -383,9 +383,12 @@ int main(int argc, char * argv[])
 		memcpy(buf, fam.c_str(), len);
 		memcpy(buf + len, (const uint8_t *) ident, 32);
 		len += 32;
-		uint8_t sigbuf[64];
-		Base64ToByteStream(sig.c_str(), sig.length(), sigbuf, 64);
-		if(!v->Verify(buf, len, sigbuf)) {
+		//uint8_t sigbuf[64];
+		auto b64 = ByteStreamToBase64(reinterpret_cast<const uint8_t*>(sig.c_str()), sig.length());
+		
+		//Base64ToByteStream(sig.c_str(), sig.length(), sigbuf, 64);
+		if (!v->Verify(buf, len,
+			reinterpret_cast<const uint8_t*>(b64.data()))) {
 			std::cout << "invalid signature" << std::endl;
 			return 1;
 		}
