@@ -21,8 +21,10 @@ int operate_b64_decode(int infile, int outfile) {
     ssize_t sz;
     while ((sz = read(infile, inbuf, sizeof(inbuf))) > 0) {
         std::string_view chunk(inbuf, sz);
+		std::string s(chunk);
+		s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
 
-        size_t outsz = i2p::data::Base64ToByteStream(chunk, outbuf, sizeof(outbuf));
+        size_t outsz = i2p::data::Base64ToByteStream(s, outbuf, sizeof(outbuf));
         if (outsz > 0) {
             write(outfile, outbuf, outsz);
         } else {
