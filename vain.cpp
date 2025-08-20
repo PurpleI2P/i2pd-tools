@@ -294,9 +294,9 @@ int main (int argc, char * argv[])
 	}
 // https://github.com/PurpleI2P/i2pd/blob/ae5239de435e1dcdff342961af9b506f60a494d4/libi2pd/Crypto.h#L310
 //// init and terminate
-//	void InitCrypto (bool precomputation, bool aesni, bool avx, bool force);
-// By default false to all. But on much proccessors some things will be enabled. SO, TODO
-	i2p::crypto::InitCrypto (PRECOMPUTATION_CRYPTO, AESNI_CRYPTO, FORCE_CRYPTO);
+//	void InitCrypto (bool precomputation);
+// By default false
+	i2p::crypto::InitCrypto (PRECOMPUTATION_CRYPTO);
 	options.signature = i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
 ///////////////
 //For while

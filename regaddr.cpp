@@ -12,7 +12,7 @@ int main (int argc, char * argv[])
 		return -1;
 	}
 
-	i2p::crypto::InitCrypto (false, true, false);
+	i2p::crypto::InitCrypto (false);
 
 	i2p::data::PrivateKeys keys;
 	std::ifstream s(argv[1], std::ifstream::binary);

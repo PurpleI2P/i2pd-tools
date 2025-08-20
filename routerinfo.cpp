@@ -6,7 +6,7 @@
 
 static void usage(const char * argv)
 {
-	std::cout << "usage: " << argv << " [-6|-f|-p] routerinfo.dat" << std::endl;
+	std::cout << "usage: " << argv << " [-6|-f|-p|-y] routerinfo.dat" << std::endl;
 }
 
 template<typename Addr>
@@ -46,12 +46,13 @@ int main(int argc, char * argv[])
 		usage(argv[0]);
 		return 1;
 	}
-	i2p::crypto::InitCrypto(false, true, false);
+	i2p::crypto::InitCrypto(false);
 	int opt;
 	bool ipv6 = false;
 	bool firewall = false;
 	bool port = false;
-	while((opt = getopt(argc, argv, "6fp")) != -1) {
+	bool yggdrasil = false;
+	while((opt = getopt(argc, argv, "6fpy")) != -1) {
 		switch(opt) {
 		case '6':
 			ipv6 = true;
@@ -61,6 +62,9 @@ int main(int argc, char * argv[])
 			break;
 		case 'p':
 			port = true;
+			break;
+		case 'y':
+			yggdrasil = true;
 			break;
 		default:
 			usage(argv[0]);
@@ -89,7 +93,13 @@ int main(int argc, char * argv[])
 			a = ri.GetSSU2V6Address();
 			if(a)
 				addrs.push_back(a);
-		}	
+		}
+
+		if(yggdrasil){
+			a = ri.GetYggdrasilAddress();
+			if(a)
+				addrs.push_back(a);
+		}
 
 		if(firewall)
 			std::cout << "# ";
