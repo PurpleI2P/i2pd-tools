@@ -35,6 +35,20 @@ make
 
 ## Tools included
 
+### i2pbase64
+
+encode/decode b64 string
+example usage:
+```
+user@computer:~/i2pd-tools$ ./i2pbase64 
+encode
+ZW5jb2RlCg==^C
+user@computer:~/i2pd-tools$ ./i2pbase64 -d
+ZW5jb2RlCg==
+encode
+```
+U also can use file
+
 ### routerinfo
 
 print information about a router info file
