@@ -69,23 +69,23 @@ int main (int argc, char * argv[])
 
 	auto oldSignatureLen = oldkeys.GetPublic ()->GetSignatureLen ();
 	uint8_t * oldSignature = new uint8_t[oldSignatureLen];
-	char * oldSig = new char[oldSignatureLen*2];
+	//char * oldSig = new char[oldSignatureLen*2];
 	oldkeys.Sign ((uint8_t *)out.str ().c_str (), out.str ().length (), oldSignature);
-	auto len = i2p::data::ByteStreamToBase64 (oldSignature, oldSignatureLen, oldSig, oldSignatureLen*2);
-	oldSig[len] = 0;
+	auto oldSig = i2p::data::ByteStreamToBase64 (oldSignature, oldSignatureLen);//, oldSig, oldSignatureLen*2);
+	//oldSig[len] = 0;
 	out << "#oldsig=" << oldSig;
 	delete[] oldSignature;
-	delete[] oldSig;
+	//delete[] oldSig;
 
 	auto signatureLen = newkeys.GetPublic ()->GetSignatureLen ();
 	uint8_t * signature = new uint8_t[signatureLen];
-	char * sig = new char[signatureLen*2];
+	//char * sig = new char[signatureLen*2];
 	newkeys.Sign ((uint8_t *)out.str ().c_str (), out.str ().length (), signature);
-	len = i2p::data::ByteStreamToBase64 (signature, signatureLen, sig, signatureLen*2);
-	sig[len] = 0;
+	auto sig = i2p::data::ByteStreamToBase64 (signature, signatureLen);//, sig, signatureLen*2);
+	//sig[len] = 0;
 	out << "#sig=" << sig;
 	delete[] signature;
-	delete[] sig;
+	//delete[] sig;
 
 	std::cout << out.str () << std::endl;
 
