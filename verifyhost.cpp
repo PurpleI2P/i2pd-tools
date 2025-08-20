@@ -93,6 +93,8 @@ int main (int argc, char * argv[])
 			{
 				std::cout << "Invalid old destination signature." << std::endl;
 				return 1;
+			} else {
+				std::cout << "Valid destination" << std::endl;
 			}
 		}
 	}
