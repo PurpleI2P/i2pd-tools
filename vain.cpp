@@ -7,6 +7,7 @@
 //#include<format> // is not supports for me
 
 // some global vars in vanitygen.hpp
+static std::string foundAddress{};
 static unsigned short fKeyId = 0;
 static struct{
         bool reg=false;
@@ -194,6 +195,7 @@ Orignal is sensei of crypto ;)
 			std::cout << "Address found " << addr << " in " << id_thread << std::endl;
 			found=true;
 			FoundNonce=*nonce;
+			foundAddress = addr;
 		 	// From there place we get a nonce, for some one a byte.
 			fKeyId = id_thread;
 		 	return true;
@@ -318,7 +320,7 @@ int main (int argc, char * argv[])
 				std::cerr << "Please, change the outputfile name" << std::endl;
 	}
 	// 
-     	if ( options . outputpath . empty () ) options . outputpath . assign ( DEF_OUT_FILE ) ;
+     	// if ( options . outputpath . empty () ); options . outputpath . assign ( DEF_OUT_FILE ) ;
 	static std::string outPutFileName  = options.outputpath;
 	auto doSearch = [argc,argv] () {
 	 found = false;
@@ -421,14 +423,17 @@ int main (int argc, char * argv[])
      	// IDK. what for acetone change this line to if (options.output...empty() ... assign
      	// cplusplus.com/reference/string/string/assign yes we can. but I would don't change this
      	//if(options.outputpath.size() == 0) options.outputpath = DEF_OUT_FILE;
-	options.outputpath = options.outputpath + std::to_string(foundKeys) + std::string(".dat");
-     	do
-	{
-		options.outputpath.assign(outPutFileName);
-		options.outputpath = options.outputpath + std::to_string(foundKeys) + std::string(".dat");
-		foundKeys++;
-		//printf("foundKeys = %d\n", foundKeys);
-	}while(  std::filesystem::exists(options.outputpath) ); 
+		if ( options . outputpath . empty () )
+			options.outputpath.assign(foundAddress+".dat");
+		else 
+			options.outputpath = options.outputpath + std::to_string(foundKeys) + std::string(".dat");
+     	while(std::filesystem::exists(options.outputpath))
+		{
+			options.outputpath.assign(outPutFileName);
+			options.outputpath = options.outputpath + std::to_string(foundKeys) + std::string(".dat");
+			foundKeys++;
+			//printf("foundKeys = %d\n", foundKeys);
+		}; 
 	//puts("do while cycle break");
 	//if ( ! boost::algorithm::ends_with(options.outputpath, ".dat") ) 
 	//	options.outputpath = options.outputpath + ".dat";
