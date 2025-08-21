@@ -4,6 +4,7 @@
 #include <fstream>
 #include <functional>
 #include <cassert>
+#include <algorithm>
 #include "Base.h"
 
 const size_t BUFFSZ = 1024;
