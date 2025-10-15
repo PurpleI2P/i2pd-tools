@@ -107,7 +107,9 @@ clean-obj:
 	rm -f $(wildcard *.o)
 stripall:
 	strip b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain autoconf
-
+builddir:
+	mkdir -p build
+	mv b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain autoconf build/ || true
 clean-bin:
 	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain autoconf
 
