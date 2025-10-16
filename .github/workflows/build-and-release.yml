@@ -1,0 +1,492 @@
+name: Build All Platforms and Release
+
+on:
+  push:
+    branches:
+    - '*'
+    tags:
+    - '*'
+  pull_request:
+    branches:
+    - '*'
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Build Linux (Ubuntu) with UPnP ON
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: install packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install build-essential cmake libboost-all-dev libminiupnpc-dev libssl-dev zlib1g-dev
+
+    - name: build application
+      run: |
+        mkdir build
+        cd build
+        cmake -DWITH_UPNP=ON ..
+        make -j3
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: i2pd-ubuntu
+        path: |
+          build/i2pd
+          build/vain
+          build/keygen
+          build/keyinfo
+          build/famtool
+          build/routerinfo
+          build/regaddr
+          build/regaddr_3ld
+          build/i2pbase64
+          build/offlinekeys
+          build/b33address
+          build/regaddralias
+          build/x25519
+          build/verifyhost
+          build/autoconf
+
+  build-macos:
+    name: Build macOS with UPnP ON
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Install dependencies
+      run: |
+        brew update
+        brew install boost miniupnpc openssl@1.1 zlib
+
+    - name: Configure and build with CMake
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DWITH_UPNP=ON \
+          -DOPENSSL_ROOT_DIR="$HOMEBREW_PREFIX/opt/openssl@1.1" \
+          -DBOOST_ROOT="$HOMEBREW_PREFIX/opt/boost" \
+          -DCMAKE_PREFIX_PATH="$HOMEBREW_PREFIX/opt/boost;$HOMEBREW_PREFIX/opt/miniupnpc;$HOMEBREW_PREFIX/opt/openssl@1.1" \
+          -DZLIB_ROOT=$(brew --prefix zlib) \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DFIND_BOOST_USE_CONFIG=OFF \
+          ..
+        make -j8
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: i2pd-macos
+        path: |
+          build/i2pd
+          build/vain
+          build/keygen
+          build/keyinfo
+          build/famtool
+          build/routerinfo
+          build/regaddr
+          build/regaddr_3ld
+          build/i2pbase64
+          build/offlinekeys
+          build/b33address
+          build/regaddralias
+          build/x25519
+          build/verifyhost
+          build/autoconf
+
+  build-macos-legacy:
+    name: Build macOS Legacy with UPnP ON
+    runs-on: macos-13
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Install dependencies
+      run: |
+        brew update
+        brew install boost miniupnpc openssl@1.1 zlib
+
+    - name: Configure and build with CMake
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DWITH_UPNP=ON \
+          -DOPENSSL_ROOT_DIR="/opt/homebrew/opt/openssl@1.1" \
+          -DBOOST_ROOT="/opt/homebrew/opt/boost" \
+          -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/boost;/opt/homebrew/opt/miniupnpc;/opt/homebrew/opt/openssl@1.1" \
+          -DZLIB_ROOT=$(brew --prefix zlib) \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DFIND_BOOST_USE_CONFIG=OFF \
+          ..
+        make -j8
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: i2pd-macos-legacy
+        path: |
+          build/i2pd
+          build/vain
+          build/keygen
+          build/keyinfo
+          build/famtool
+          build/routerinfo
+          build/regaddr
+          build/regaddr_3ld
+          build/i2pbase64
+          build/offlinekeys
+          build/b33address
+          build/regaddralias
+          build/x25519
+          build/verifyhost
+          build/autoconf
+
+  build-freebsd:
+    name: Build FreeBSD with UPnP ON
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        usesh: true
+        mem: 2048
+        sync: rsync
+        copyback: true
+        prepare: pkg install -y devel/cmake devel/gmake devel/boost-libs security/openssl net/miniupnpc
+        run: |
+          mkdir build
+          cd build
+          cmake -DWITH_UPNP=ON -DCMAKE_BUILD_TYPE=Release ..
+          gmake -j2
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: i2pd-freebsd
+        path: |
+          build/i2pd
+          build/vain
+          build/keygen
+          build/keyinfo
+          build/famtool
+          build/routerinfo
+          build/regaddr
+          build/regaddr_3ld
+          build/i2pbase64
+          build/offlinekeys
+          build/b33address
+          build/regaddralias
+          build/x25519
+          build/verifyhost
+          build/autoconf
+
+  build-windows-ucrt:
+    name: Build Windows UCRT x64
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        install: base-devel git mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-boost mingw-w64-ucrt-x86_64-openssl mingw-w64-ucrt-x86_64-miniupnpc
+        update: true
+
+    - name: Build application
+      run: |
+        cmake -DWITH_GIT_VERSION=ON -DWITH_STATIC=ON -DWITH_UPNP=ON -DCMAKE_BUILD_TYPE=Release .
+        cmake --build . -- -j3
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: i2pd-windows-ucrt
+        path: |
+          ./i2pd.exe
+          ./vain.exe
+          ./keygen.exe
+          ./keyinfo.exe
+          ./famtool.exe
+          ./routerinfo.exe
+          ./regaddr.exe
+          ./regaddr_3ld.exe
+          ./i2pbase64.exe
+          ./offlinekeys.exe
+          ./b33address.exe
+          ./regaddralias.exe
+          ./x25519.exe
+          ./verifyhost.exe
+          ./autoconf.exe
+
+  build-windows-arm:
+    name: Build Windows ARM64
+    runs-on: windows-11-arm
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: CLANGARM64
+        install: base-devel git mingw-w64-clang-aarch64-cmake mingw-w64-clang-aarch64-ninja mingw-w64-clang-aarch64-clang mingw-w64-clang-aarch64-boost mingw-w64-clang-aarch64-openssl mingw-w64-clang-aarch64-miniupnpc
+        update: true
+
+    - name: Build application
+      run: |
+        cmake -DWITH_GIT_VERSION=ON -DWITH_STATIC=ON -DWITH_UPNP=ON -DCMAKE_BUILD_TYPE=Release .
+        cmake --build . -- -j3
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: i2pd-windows-arm64
+        path: |
+          ./i2pd.exe
+          ./vain.exe
+          ./keygen.exe
+          ./keyinfo.exe
+          ./famtool.exe
+          ./routerinfo.exe
+          ./regaddr.exe
+          ./regaddr_3ld.exe
+          ./i2pbase64.exe
+          ./offlinekeys.exe
+          ./b33address.exe
+          ./regaddralias.exe
+          ./x25519.exe
+          ./verifyhost.exe
+          ./autoconf.exe
+
+  release:
+    name: Create Continuous Release
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-macos, build-macos-legacy, build-freebsd, build-windows-ucrt, build-windows-arm]
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          
+      - name: List downloaded artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          if [ -d "artifacts" ]; then
+            find artifacts -type f
+            echo ""
+            echo "Artifact directories:"
+            ls -la artifacts/
+          else
+            echo "No artifacts directory found"
+          fi
+
+      - name: Create release directory structure
+        run: |
+          mkdir -p releases/{linux,freebsd,macos,windows}
+          
+      - name: Organize Linux artifacts
+        run: |
+          # Find and copy Linux artifacts (Ubuntu/CMake builds)
+          if [ -d "artifacts/i2pd-ubuntu" ]; then
+            cp -r "artifacts/i2pd-ubuntu" "releases/linux/ubuntu" 
+            echo "Copied Linux artifact: ubuntu"
+            
+            # Create compressed archive for Linux build
+            tar -czf "i2pd-linux-ubuntu.tar.gz" -C releases/linux/ubuntu .
+            echo "Created Linux archive: i2pd-linux-ubuntu.tar.gz"
+          else
+            echo "No Linux artifacts found"
+          fi
+
+      - name: Organize FreeBSD artifacts
+        run: |
+          # Copy FreeBSD artifacts
+          if [ -d "artifacts/i2pd-freebsd" ]; then
+            cp -r "artifacts/i2pd-freebsd" releases/freebsd/
+            echo "Copied FreeBSD artifacts"
+            
+            # Create compressed archive for FreeBSD
+            tar -czf i2pd-freebsd.tar.gz -C releases/freebsd i2pd-freebsd
+            echo "Created FreeBSD archive: i2pd-freebsd.tar.gz"
+          else
+            echo "No FreeBSD artifacts found"
+          fi
+
+      - name: Organize macOS artifacts
+        run: |
+          # Find and copy macOS (ARM) artifacts
+          if [ -d "artifacts/i2pd-macos" ]; then
+            cp -r "artifacts/i2pd-macos" "releases/macos/macos-arm" 
+            echo "Copied macOS ARM artifact"
+            
+            # Create compressed archive for macOS ARM build
+            tar -czf "i2pd-macos-arm.tar.gz" -C releases/macos/macos-arm .
+            echo "Created macOS ARM archive: i2pd-macos-arm.tar.gz"
+          else
+            echo "No macOS ARM artifacts found"
+          fi
+          
+          # Find and copy macOS (Legacy/Intel) artifacts
+          if [ -d "artifacts/i2pd-macos-legacy" ]; then
+            cp -r "artifacts/i2pd-macos-legacy" "releases/macos/macos-legacy"
+            echo "Copied macOS Legacy artifact"
+            
+            # Create compressed archive for macOS Legacy build
+            tar -czf "i2pd-macos-legacy.tar.gz" -C releases/macos/macos-legacy .
+            echo "Created macOS Legacy archive: i2pd-macos-legacy.tar.gz"
+          else
+            echo "No macOS Legacy artifacts found"
+          fi
+
+      - name: Organize Windows artifacts
+        run: |
+          # Find and copy Windows UCRT (x64) artifact
+          if [ -d "artifacts/i2pd-windows-ucrt" ]; then
+            echo "Processing Windows UCRT (x64) artifact"
+            # Create releases/windows/ucrt directory and copy .exe files directly to it
+            mkdir -p "releases/windows/ucrt"
+            cp "artifacts/i2pd-windows-ucrt"/*.exe "releases/windows/ucrt/" 2>/dev/null || echo "No .exe files in Windows UCRT artifact or copying failed"
+            
+            # Create ZIP archive for Windows UCRT build
+            if ls "releases/windows/ucrt"/*.exe >/dev/null 2>&1; then
+              cd "releases/windows/ucrt"
+              zip -r "../../../i2pd-windows-ucrt.zip" *.exe
+              cd ../../..
+              echo "Created Windows UCRT archive: i2pd-windows-ucrt.zip"
+            else
+              echo "No .exe files found in Windows UCRT release directory"
+              ls -la "releases/windows/ucrt/" 2>/dev/null || echo "Windows UCRT release directory doesn't exist"
+            fi
+          else
+            echo "No Windows UCRT artifacts found"
+          fi
+          
+          # Find and copy Windows ARM64 artifact
+          if [ -d "artifacts/i2pd-windows-arm64" ]; then
+            echo "Processing Windows ARM64 artifact"
+            # Create releases/windows/arm64 directory and copy .exe files directly to it
+            mkdir -p "releases/windows/arm64"
+            cp "artifacts/i2pd-windows-arm64"/*.exe "releases/windows/arm64/" 2>/dev/null || echo "No .exe files in Windows ARM64 artifact or copying failed"
+            
+            # Create ZIP archive for Windows ARM64 build
+            if ls "releases/windows/arm64"/*.exe >/dev/null 2>&1; then
+              cd "releases/windows/arm64"
+              zip -r "../../../i2pd-windows-arm64.zip" *.exe
+              cd ../../..
+              echo "Created Windows ARM64 archive: i2pd-windows-arm64.zip"
+            else
+              echo "No .exe files found in Windows ARM64 release directory"
+              ls -la "releases/windows/arm64/" 2>/dev/null || echo "Windows ARM64 release directory doesn't exist"
+            fi
+          else
+            echo "No Windows ARM64 artifacts found"
+          fi
+
+      - name: Prepare release assets
+        run: |
+          echo "Listing all release assets:"
+          ls -la *.tar.gz *.zip 2>/dev/null || echo "No release assets found - will create them from available artifacts"
+          
+      - name: Delete previous continuous release assets
+        run: |
+          # Get the release ID for the continuous release
+          RELEASE_ID=$(gh api repos/${{ github.repository }}/releases/tags/continuous --jq '.id' 2>/dev/null || echo "notfound")
+          if [ "$RELEASE_ID" != "notfound" ] && [ "$RELEASE_ID" != "" ]; then
+            echo "Found existing continuous release with ID: $RELEASE_ID"
+            # Get asset IDs and delete them
+            ASSET_IDS=$(gh api repos/${{ github.repository }}/releases/$RELEASE_ID/assets --jq '.[].id')
+            for asset_id in $ASSET_IDS; do
+              if [ ! -z "$asset_id" ]; then
+                echo "Deleting asset ID: $asset_id"
+                gh api -X DELETE repos/${{ github.repository }}/releases/assets/$asset_id || true
+              fi
+            done
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Final listing of assets
+        run: |
+          echo "Final check for release assets:"
+          ls -la *.tar.gz *.zip 2>/dev/null || echo "No assets to upload - check if artifacts were processed"
+
+      - name: Update or Create Continuous Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: continuous
+          name: Continuous Release
+          body: |
+            Continuous Release Build
+            
+            Latest Workflow Run: ${{ github.run_id }}
+            Commit: ${{ github.sha }}
+            Updated: $(date -u)
+            
+            This release contains build artifacts for multiple platforms:
+            - Linux (with UPnP ON)
+            - FreeBSD (with UPnP ON)
+            - macOS (ARM with UPnP ON)
+            - macOS (Legacy/Intel with UPnP ON)
+            - Windows (UCRT x64 variant)
+            - Windows (ARM64 variant)
+            
+            Artifacts include the main executable and all associated utilities.
+            This release is continuously updated with the latest builds.
+          draft: false
+          prerelease: true
+          make_latest: false
+          files: |
+            *.tar.gz
+            *.zip
+          fail_on_unmatched_files: false
