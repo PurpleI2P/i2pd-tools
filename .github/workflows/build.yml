@@ -12,7 +12,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest] #, windows-latest]
         compiler: [clang]
 
     runs-on: ${{ matrix.os }}
@@ -39,14 +39,14 @@ jobs:
             obj
             libi2pd.a
           key: ubuntu-build-${{ runner.os }}-${{ hashFiles('**/*.cpp', '**/*.h') }}
-
-      - name: Install MSYS2 (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          Invoke-WebRequest -Uri "https://github.com/msys2/msys2-installer/releases/download/2025-08-30/msys2-x86_64-20250830.exe" -OutFile "msys2-installer.exe"
-          Start-Process -Wait -FilePath "msys2-installer.exe" -ArgumentList "/S"
-          C:\msys64\usr\bin\bash.exe -lc "pacman -Syu --noconfirm"
-          C:\msys64\usr\bin\bash.exe -lc "export ARCH=x86_64; export MINGW=mingw64; pacman -S --noconfirm mingw-w64-$ARCH-gcc mingw-w64-$ARCH-boost mingw-w64-$ARCH-openssl git make"
+#
+#      - name: Install MSYS2 (Windows)
+#        if: matrix.os == 'windows-latest'
+#        run: |
+#          Invoke-WebRequest -Uri "https://github.com/msys2/msys2-installer/releases/download/2025-08-30/msys2-x86_64-20250830.exe" -OutFile "msys2-installer.exe"
+#          Start-Process -Wait -FilePath "msys2-installer.exe" -ArgumentList "/S"
+#          C:\msys64\usr\bin\bash.exe -lc "pacman -Syu --noconfirm"
+#          C:\msys64\usr\bin\bash.exe -lc "export ARCH=x86_64; export MINGW=mingw64; pacman -S --noconfirm mingw-w64-$ARCH-gcc mingw-w64-$ARCH-boost mingw-w64-$ARCH-openssl git make"
 
       - name: Initialize Git Submodules
         run: git submodule update --init --recursive
@@ -57,12 +57,12 @@ jobs:
           make -j8
           make stripall
           make builddir
-
-      - name: Build Project (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          C:\msys64\usr\bin\bash.exe -lc "cd /c/runner/work/i2pd-tools/i2pd-tools && make && make stripall && make builddir"
-
+#
+#      - name: Build Project (Windows)
+#        if: matrix.os == 'windows-latest'
+#        run: |
+#          C:\msys64\usr\bin\bash.exe -lc "cd /c/runner/work/i2pd-tools/i2pd-tools && make && make stripall && make builddir"
+#
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:

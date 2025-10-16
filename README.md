@@ -31,6 +31,9 @@ git submodule init && git submodule update
 git submodule update --init
 git pull --recurse-submodules
 make
+# optional, for small output
+# make stripall
+# make builddir
 ```
 
 ## Tools included
