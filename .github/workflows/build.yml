@@ -12,7 +12,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest] #, windows-latest]
+        os: [ubuntu-latest, windows-latest]
         compiler: [clang]
 
     runs-on: ${{ matrix.os }}
@@ -47,6 +47,14 @@ jobs:
 #          Start-Process -Wait -FilePath "msys2-installer.exe" -ArgumentList "/S"
 #          C:\msys64\usr\bin\bash.exe -lc "pacman -Syu --noconfirm"
 #          C:\msys64\usr\bin\bash.exe -lc "export ARCH=x86_64; export MINGW=mingw64; pacman -S --noconfirm mingw-w64-$ARCH-gcc mingw-w64-$ARCH-boost mingw-w64-$ARCH-openssl git make"
+      - name: Install MSYS2 (Windows)
+        uses: msys2/setup-msys2@v2
+        if: matrix.os == 'windows-latest'
+        with:
+          msystem: CLANG64
+          install: base-devel git mingw-w64-x86_64-clang mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-miniupnpc
+          update: true
+
 
       - name: Initialize Git Submodules
         run: git submodule update --init --recursive
