@@ -1,52 +1,54 @@
-UNAME = $(shell uname -s)
+UNAME := $(shell uname -s)
 
-I2PD_PATH = i2pd
-I2PD_LIB = libi2pd.a
+I2PD_PATH := i2pd
+I2PD_LIB := libi2pd.a
 
-LIBI2PD_PATH = $(I2PD_PATH)/libi2pd
-LIBI2PD_CLIENT_PATH = $(I2PD_PATH)/libi2pd_client
+LIBI2PD_PATH := $(I2PD_PATH)/libi2pd
+LIBI2PD_CLIENT_PATH := $(I2PD_PATH)/libi2pd_client
 
 CXX ?= g++
-CXXFLAGS = -Wall -std=c++17 -O2
-INCFLAGS = -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH)
-DEFINES = -DOPENSSL_SUPPRESS_DEPRECATED
+CXXFLAGS := -Wall -std=c++17 -O2
+INCFLAGS := -I$(LIBI2PD_PATH) -I$(LIBI2PD_CLIENT_PATH)
+DEFINES := -DOPENSSL_SUPPRESS_DEPRECATED
 
-LDFLAGS =
-LDLIBS = $(I2PD_PATH)/$(I2PD_LIB) -lboost_system$(BOOST_SUFFIX) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lz
+LDFLAGS := 
+LDLIBS := $(I2PD_PATH)/$(I2PD_LIB) -lboost_program_options$(BOOST_SUFFIX) -lssl -lcrypto -lz
 
-# -------------------------
-# Platform-specific flags
-# -------------------------
 ifeq ($(UNAME),Linux)
-	CXXFLAGS += -g
-	LDLIBS += -lrt -lpthread
+    CXXFLAGS += -g
+    LDLIBS += -lrt -lpthread
 else ifeq ($(UNAME),Darwin)
-	CXXFLAGS += -g
-	LDLIBS += -lpthread
-	ifdef HOMEBREW
-		BREW_PREFIX := $(shell brew --prefix)
-		INCFLAGS += -I$(BREW_PREFIX)/include
-		LDFLAGS += -L$(BREW_PREFIX)/lib
-	else
-		INCFLAGS += -I/usr/local/opt/openssl@3/include -I/usr/local/include
-		LDFLAGS += -L/usr/local/opt/openssl@3/lib -L/usr/local/lib
-	endif
+    CXXFLAGS += -g
+    LDLIBS += -lpthread
+
+    # Определяем путь Homebrew
+    ifeq ($(shell test -d /opt/homebrew && echo "true"),true)
+        BREW_PREFIX := /opt/homebrew
+    else
+        BREW_PREFIX := /usr/local
+    endif
+
+    INCFLAGS += -I$(BREW_PREFIX)/include -I$(BREW_PREFIX)/opt/openssl@3/include
+    LDFLAGS += -L$(BREW_PREFIX)/lib -L$(BREW_PREFIX)/opt/openssl@3/lib
+    LDLIBS += $(BREW_PREFIX)/lib/libboost_system.a \
+              $(BREW_PREFIX)/lib/libboost_program_options.a
 else ifeq ($(UNAME),FreeBSD)
-	CXXFLAGS += -g
-	LDLIBS += -lthr -lpthread
-	LDFLAGS += -L/usr/local/lib
-	INCFLAGS += -I/usr/local/include
+    CXXFLAGS += -g
+    LDLIBS += -lthr -lpthread
+    LDFLAGS += -L/usr/local/lib
+    INCFLAGS += -I/usr/local/include
 else
-# Windows (MSYS2 / MinGW)
-	CXXFLAGS += -Os -fPIC -msse
-	DEFINES += -DWIN32_LEAN_AND_MEAN
-	BOOST_SUFFIX = -mt
-	LDLIBS += -lwsock32 -lws2_32 -liphlpapi -lpthread
-	LDFLAGS += -s -static
+    # Windows
+    CXXFLAGS += -Os -fPIC -msse
+    DEFINES += -DWIN32_LEAN_AND_MEAN
+    LDFLAGS += -L/clang64/lib
+    INCFLAGS += -I/clang64/include
+    BOOST_SUFFIX =
+    LDLIBS += -lwsock32 -lws2_32 -liphlpapi -lpthread
 endif
 
 # -------------------------
-# Build targets
+# Targets
 # -------------------------
 all: $(I2PD_LIB) vain keygen keyinfo famtool routerinfo regaddr regaddr_3ld i2pbase64 offlinekeys b33address regaddralias x25519 verifyhost autoconf
 
@@ -57,7 +59,7 @@ autoconf: autoconf.o $(I2PD_LIB)
 	$(CXX) -o autoconf $(DEFINES) $(LDFLAGS) autoconf.o $(LDLIBS)
 
 routerinfo: routerinfo.o $(I2PD_LIB)
-	$(CXX) -o routerinfo $(LDFLAGS) routerinfo.o $(LDLIBS) -latomic
+	$(CXX) -o routerinfo $(LDFLAGS) routerinfo.o $(LDLIBS)
 
 keygen: keygen.o $(I2PD_LIB)
 	$(CXX) -o keygen $(DEFINES) $(LDFLAGS) keygen.o $(LDLIBS)
@@ -66,7 +68,7 @@ keyinfo: keyinfo.o $(I2PD_LIB)
 	$(CXX) -o keyinfo $(DEFINES) $(LDFLAGS) keyinfo.o $(LDLIBS)
 
 famtool: famtool.o $(I2PD_LIB)
-	$(CXX) -o famtool $(DEFINES) $(LDFLAGS) famtool.o $(LDLIBS) -latomic
+	$(CXX) -o famtool $(DEFINES) $(LDFLAGS) famtool.o $(LDLIBS)
 
 regaddr: regaddr.o $(I2PD_LIB)
 	$(CXX) -o regaddr $(DEFINES) $(LDFLAGS) regaddr.o $(LDLIBS)
@@ -95,7 +97,6 @@ verifyhost: verifyhost.o $(I2PD_LIB)
 # -------------------------
 # Object compilation
 # -------------------------
-.SUFFIXES:
 .SUFFIXES: .c .cc .C .cpp .o
 
 $(I2PD_LIB):
