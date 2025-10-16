@@ -21,7 +21,6 @@ else ifeq ($(UNAME),Darwin)
     CXXFLAGS += -g
     LDLIBS += -lpthread
 
-    # Определяем путь Homebrew
     ifeq ($(shell test -d /opt/homebrew && echo "true"),true)
         BREW_PREFIX := /opt/homebrew
     else
@@ -30,8 +29,8 @@ else ifeq ($(UNAME),Darwin)
 
     INCFLAGS += -I$(BREW_PREFIX)/include -I$(BREW_PREFIX)/opt/openssl@3/include
     LDFLAGS += -L$(BREW_PREFIX)/lib -L$(BREW_PREFIX)/opt/openssl@3/lib
-    LDLIBS += $(BREW_PREFIX)/lib/libboost_system.a \
-              $(BREW_PREFIX)/lib/libboost_program_options.a
+    # Используем динамические библиотеки, без указания .a
+    LDLIBS += -lboost_system -lboost_program_options
 else ifeq ($(UNAME),FreeBSD)
     CXXFLAGS += -g
     LDLIBS += -lthr -lpthread
