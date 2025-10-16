@@ -407,7 +407,7 @@ set(TOOLS
     regaddralias
     x25519
     verifyhost
-    autoconf
+    autoconf_i2pd
 )
 
 foreach(tool IN LISTS TOOLS)
