@@ -55,7 +55,7 @@ jobs:
           build/regaddralias
           build/x25519
           build/verifyhost
-          build/autoconf
+          build/autoconf_i2pd
 
   build-macos:
     name: Build macOS with UPnP ON
@@ -106,7 +106,7 @@ jobs:
           build/regaddralias
           build/x25519
           build/verifyhost
-          build/autoconf
+          build/autoconf_i2pd
 
   build-macos-legacy:
     name: Build macOS Legacy with UPnP ON
@@ -157,7 +157,7 @@ jobs:
           build/regaddralias
           build/x25519
           build/verifyhost
-          build/autoconf
+          build/autoconf_i2pd
 
   build-freebsd:
     name: Build FreeBSD with UPnP ON
@@ -203,7 +203,7 @@ jobs:
           build/regaddralias
           build/x25519
           build/verifyhost
-          build/autoconf
+          build/autoconf_i2pd
 
   build-windows-ucrt:
     name: Build Windows UCRT x64
@@ -251,7 +251,7 @@ jobs:
           ./regaddralias.exe
           ./x25519.exe
           ./verifyhost.exe
-          ./autoconf.exe
+          ./autoconf_i2pd.exe
 
   build-windows-arm:
     name: Build Windows ARM64
@@ -299,7 +299,7 @@ jobs:
           ./regaddralias.exe
           ./x25519.exe
           ./verifyhost.exe
-          ./autoconf.exe
+          ./autoconf_i2pd.exe
 
   release:
     name: Create Continuous Release

@@ -20,6 +20,7 @@ offlinekeys
 regaddr_3ld
 verifyhost
 x25519
+autoconf_i2pd
 *.exe
 
 # private key files
