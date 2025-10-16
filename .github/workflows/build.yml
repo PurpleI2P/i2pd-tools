@@ -12,7 +12,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         compiler: [clang]
 
     runs-on: ${{ matrix.os }}
@@ -44,13 +44,13 @@ jobs:
       #######################
       # Windows dependencies #
       #######################
-      - name: Install MSYS2 (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: CLANG64
-          install: base-devel git mingw-w64-x86_64-clang mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-miniupnpc
-          update: true
+#      - name: Install MSYS2 (Windows)
+#        if: matrix.os == 'windows-latest'
+##        uses: msys2/setup-msys2@v2
+ #       with:
+ #         msystem: CLANG64
+ #         install: base-devel git mingw-w64-x86_64-clang mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-miniupnpc
+ #         update: true
 
       - name: Initialize Git Submodules
         run: git submodule update --init --recursive
@@ -72,14 +72,14 @@ jobs:
           make stripall
           make builddir
 
-      - name: Build Project (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: msys2 {0}
-        run: |
-          cd "${GITHUB_WORKSPACE}"
-          make -j$(nproc)
-          make stripall
-          make builddir
+#      - name: Build Project (Windows)
+#        if: matrix.os == 'windows-latest'
+##        shell: msys2 {0}
+ #       run: |
+ #         cd "${GITHUB_WORKSPACE}"
+ #         make -j$(nproc)
+ #         make stripall
+ #         make builddir
 
       #######################
       # Upload binaries
