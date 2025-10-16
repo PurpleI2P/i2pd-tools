@@ -3,7 +3,9 @@ name: Build All Platforms and Release
 on:
   push:
     branches:
-    - '*'
+    - 'master'
+    - 'main'
+    - 'trunk'
     tags:
     - '*'
   pull_request:
