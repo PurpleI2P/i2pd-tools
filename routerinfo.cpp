@@ -1,77 +1,125 @@
 #include <iostream>
-#include <vector>
-#include <string>
-#include <memory>
-#include <cctype>
+#include <unistd.h>
 #include "Crypto.h"
 #include "RouterInfo.h"
 
+
+static void usage(const char * argv)
+{
+	std::cout << "usage: " << argv << " [-6|-f|-p|-y] routerinfo.dat" << std::endl;
+}
+
+template<typename Addr>
+static std::string address_style_string(Addr addr)
+{
+	if(addr->transportStyle == i2p::data::RouterInfo::eTransportNTCP2) {
+		return "NTCP2";
+	} else if (addr->transportStyle == i2p::data::RouterInfo::eTransportSSU2) {
+		return "SSU2";
+	}
+	return "???";
+
+}
+
+template<typename Addr>
+static void write_firewall_entry(std::ostream & o, Addr addr)
+{
+
+	std::string proto;
+	if(addr->transportStyle == i2p::data::RouterInfo::eTransportNTCP2) {
+		proto = "tcp";
+	} else if (addr->transportStyle == i2p::data::RouterInfo::eTransportSSU2) {
+		proto = "udp";
+	} else {
+		// bail
+		return;
+	}
+
+	o << " -A OUTPUT -p " << proto;
+	o << " -d " << addr->host << " --dport " << addr->port;
+	o << " -j ACCEPT";
+}
+
 int main(int argc, char * argv[])
 {
-    if (argc < 2) return 1;
-    i2p::crypto::InitCrypto(false);
+	if (argc < 2) {
+		usage(argv[0]);
+		return 1;
+	}
+	i2p::crypto::InitCrypto(false);
+	int opt;
+	bool ipv6 = false;
+	bool firewall = false;
+	bool port = false;
+	bool yggdrasil = false;
+	while((opt = getopt(argc, argv, "6fpy")) != -1) {
+		switch(opt) {
+		case '6':
+			ipv6 = true;
+			break;
+		case 'f':
+			firewall = true;
+			break;
+		case 'p':
+			port = true;
+			break;
+		case 'y':
+			yggdrasil = true;
+			break;
+		default:
+			usage(argv[0]);
+			return 1;
+		}
+	}
 
-    for (int i = 1; i < argc; ++i) {
-        std::string fname(argv[i]);
-        i2p::data::RouterInfo ri(fname);
+	while(optind < argc) {
+		int idx = optind;
+		optind ++;
+		std::string fname(argv[idx]);
+		i2p::data::RouterInfo ri(fname);
 
-        std::cout << "Router Hash: " << ri.GetIdentHashBase64() << std::endl;
+		std::vector<std::shared_ptr<const i2p::data::RouterInfo::Address> > addrs;
+		auto a = ri.GetPublishedNTCP2V4Address();
+		if(a)
+			addrs.push_back(a);
+		a = ri.GetSSU2V4Address();
+		if(a)
+			addrs.push_back(a);
+		if (ipv6)
+		{
+			a = ri.GetPublishedNTCP2V6Address();
+			if(a)
+				addrs.push_back(a);
+			a = ri.GetSSU2V6Address();
+			if(a)
+				addrs.push_back(a);
+		}
 
-        const uint8_t* buf = ri.GetBuffer();
-        size_t len = ri.GetBufferLen();
+		if(yggdrasil){
+			a = ri.GetYggdrasilAddress();
+			if(a)
+				addrs.push_back(a);
+		}
 
-        if (buf && len > 0) {
-            std::string raw(reinterpret_cast<const char*>(buf), len);
-            
-            // --- PARSE FROM THE END ---
-            // List of specific tags to find by searching backwards
-            // Example for my friends from ilita chat:
-            // Use any tags you need
-            // Insert them in tags below 
-            // "router.version=",
-            // "caps=",
-            // "netId=",
-            // "netdb.knownRouters=",
-            // "netdb.knownLeaseSets="
-            std::vector<std::string> tags = {
-                "router.version=", 
-                "caps=" 
-            };
+		if(firewall)
+			std::cout << "# ";
+		else
+			std::cout << "Router Hash: ";
+		std::cout << ri.GetIdentHashBase64() << std::endl;
 
-            for (const auto& tag : tags) {
-                // Search from the end of the file
-                size_t tag_pos = raw.rfind(tag); 
-                
-                if (tag_pos != std::string::npos) {
-                    // Value starts after the '='
-                    size_t v_start = tag_pos + tag.length();
-                    // Value ends at the next ';'
-                    size_t v_end = raw.find(';', v_start);
-                    
-                    if (v_end != std::string::npos) {
-                        std::string val = raw.substr(v_start, v_end - v_start);
-                        std::string key = tag.substr(0, tag.length() - 1);
-                        std::cout << "Property: " << key << " = " << val << std::endl;
-                    }
-                }
-            }
-        }
+		for (const auto & a : addrs) {
 
-        // --- NETWORK TRANSPORTS ---
-        auto ntcp2v4 = ri.GetPublishedNTCP2V4Address();
-        if (ntcp2v4) std::cout << "NTCP2: " << ntcp2v4->host.to_string() <<  std::endl;
+			if(firewall) {
+				write_firewall_entry(std::cout, a);
+			} else {
+				std::cout << address_style_string(a) << ": " << a->host;
 
-        auto ssu2v4 = ri.GetSSU2V4Address();
-        if (ssu2v4) std::cout << "SSU2: " << ssu2v4->host.to_string() << std::endl;
+				if (port)
+					std::cout << ":" << a->port;
+			}
+			std::cout << std::endl;
+		}
+	}
 
-        auto ntcp2v6 = ri.GetPublishedNTCP2V6Address();
-        if (ntcp2v6) std::cout << "NTCP2_V6: " << ntcp2v6->host.to_string() <<  std::endl;
-
-        auto ssu2v6 = ri.GetSSU2V6Address();
-        if (ssu2v6) std::cout << "SSU2_V6: [" << ssu2v6->host.to_string() << std::endl;
-        
-    }
-
-    i2p::crypto::TerminateCrypto();
-    return 0;
+	return 0;
 }
