@@ -123,7 +123,7 @@ Vanity generation address.
 
 #### Usage
 
-./vain --usage
+./vain --help
 
 #### Time to Generate on a 2.70GHz Processor
 | characters| time to generate (approx.) |
