@@ -403,6 +403,7 @@ set(TOOLS
     regaddr_3ld
     i2pbase64
     offlinekeys
+    b33offlinekeys
     b33address
     regaddralias
     x25519

@@ -49,7 +49,7 @@ endif
 # -------------------------
 # Targets
 # -------------------------
-all: $(I2PD_LIB) vain keygen keyinfo famtool routerinfo regaddr regaddr_3ld i2pbase64 offlinekeys b33address regaddralias x25519 verifyhost autoconf_i2pd
+all: $(I2PD_LIB) vain keygen keyinfo famtool routerinfo regaddr regaddr_3ld i2pbase64 offlinekeys b33offlinekeys b33address regaddralias x25519 verifyhost autoconf_i2pd
 
 vain: vain.o $(I2PD_LIB)
 	$(CXX) -o vain $(LDFLAGS) vain.o $(LDLIBS)
@@ -80,6 +80,9 @@ i2pbase64: i2pbase64.o $(I2PD_LIB)
 
 offlinekeys: offlinekeys.o $(I2PD_LIB)
 	$(CXX) -o offlinekeys $(DEFINES) $(LDFLAGS) offlinekeys.o $(LDLIBS)
+
+b33offlinekeys: b33offlinekeys.o $(I2PD_LIB)
+	$(CXX) -o b33offlinekeys $(DEFINES) $(LDFLAGS) b33offlinekeys.o $(LDLIBS)
 
 b33address: b33address.o $(I2PD_LIB)
 	$(CXX) -o b33address $(DEFINES) $(LDFLAGS) b33address.o $(LDLIBS)
@@ -117,14 +120,14 @@ clean-obj:
 	rm -f $(wildcard *.o)
 
 stripall:
-	strip b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain autoconf_i2pd
+	strip b33address famtool i2pbase64 keygen keyinfo offlinekeys b33offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain autoconf_i2pd
 
 builddir:
 	mkdir -p build
-	mv b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain autoconf_i2pd build/ || true
+	mv b33address famtool i2pbase64 keygen keyinfo offlinekeys b33offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain autoconf_i2pd build/ || true
 
 clean-bin:
-	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain autoconf_i2pd
+	rm -f b33address famtool i2pbase64 keygen keyinfo offlinekeys b33offlinekeys regaddr regaddr_3ld regaddralias routerinfo x25519 verifyhost vain autoconf_i2pd
 
 clean: clean-i2pd clean-obj clean-bin
 
