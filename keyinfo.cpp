@@ -5,10 +5,40 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <memory>
 #include <unistd.h>
 #include <stdio.h>
 #include <time.h>
 #include "common/key.hpp"
+
+
+// version || ident hash || number of keys, then per day expires || transient signature type ||
+// transient public key || signature by that day's blinded key || transient private key
+static void printB33OfflineKeys (const i2p::data::PrivateKeys& keys, const i2p::data::BlindedPublicKey& blindedKey)
+{
+	const auto& batch = keys.GetB33OfflineKeys ();
+	if (!batch.GetLen ()) return;
+	std::unique_ptr<i2p::crypto::Verifier> blindedVerifier (
+		i2p::data::IdentityEx::CreateVerifier (blindedKey.GetBlindedSigType ()));
+	if (!blindedVerifier) return;
+	const uint8_t * buf = batch.GetBuffer ();
+	size_t offset = i2p::data::B33_OFFLINE_KEYS_HEADER_LENGTH - 2;
+	uint16_t numKeys = bufbe16toh (buf + offset); offset += 2;
+	std::string firstDate, lastDate;
+	for (uint16_t i = 0; i < numKeys; i++)
+	{
+		std::unique_ptr<i2p::crypto::Verifier> transientVerifier (
+			i2p::data::IdentityEx::CreateVerifier (bufbe16toh (buf + offset + 4)));
+		if (!transientVerifier) return;
+		char date[9];
+		i2p::util::GetDateString (bufbe32toh (buf + offset) - i2p::data::SECONDS_PER_DAY, date);
+		if (!i) firstDate = date;
+		lastDate = date;
+		offset += i2p::data::OFFLINE_SIGNATURE_HEADER_LENGTH + transientVerifier->GetPublicKeyLen () +
+			blindedVerifier->GetSignatureLen () + transientVerifier->GetPrivateKeyLen ();
+	}
+	std::cout << "b33 offline keys: " << numKeys << " days, " << firstDate << " to " << lastDate << std::endl;
+}
 
 static int printHelp(const char * exe, int exitcode)
 {
@@ -113,6 +143,7 @@ int main(int argc, char * argv[])
 			i2p::data::BlindedPublicKey blindedKey (dest);
 			std::cout << "b33 address: " << blindedKey.ToB33 () << ".b32.i2p" << std::endl;
 			std::cout << "Today's store hash: " << blindedKey.GetStoreHash ().ToBase64 () << std::endl;
+			printB33OfflineKeys (keys, blindedKey);
 		}
 		else
 			std::cout << "Invalid signature type " << SigTypeToName (dest->GetSigningKeyType ()) << std::endl;

@@ -226,7 +226,27 @@ verify signed router.info
     xLSOIwih0Jx3JObPRCBJexYOpPYJsEwQ1A==
     -----END EC PRIVATE KEY-----
 
-#### AutoConf
+### b33offlinekeys
+
+Per-day keys that let a router publish an encrypted LeaseSet (a b33 address) without
+holding the destination's signing key, read by i2pd since 2.62.0. For every day the tool
+blinds the destination's key, authorizes a transient key with an offline signature, and
+appends the transients and their signatures to the keys file. The destination must be
+Ed25519 or RedDSA, and the address stops being published when the batch runs out.
+
+#### Usage
+
+    ./b33offlinekeys b33batch.dat privkey.dat 365
+
+Then, in `tunnels.conf`:
+
+    [my-service]
+    type = server
+    keys = b33batch.dat
+    i2cp.leaseSetType = 5
+
+### AutoConf
+
 A program for help create the config file for i2pd
 
 For a now a better way to manual write the config file
