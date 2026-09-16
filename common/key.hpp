@@ -67,13 +67,13 @@ uint16_t NameToSigType(const std::string & keyname)
 
 	if(name.find("RSA-SHA512") != npos) return i2p::data::SIGNING_KEY_TYPE_RSA_SHA512_4096;
 
+	if(name.find("RED25519") != npos) return i2p::data::SIGNING_KEY_TYPE_REDDSA_SHA512_ED25519; // before ED25519: RED25519-SHA512 contains it
+
 	if(name.find("ED25519") != npos) return i2p::data::SIGNING_KEY_TYPE_EDDSA_SHA512_ED25519;
 
 	if(name.find("GOSTR3410-A-GOSTR3411-256") != npos) return i2p::data::SIGNING_KEY_TYPE_GOSTR3410_CRYPTO_PRO_A_GOSTR3411_256;
 
 	if(name.find("GOSTR3410-TC26-A-GOSTR3411-512") != npos) return i2p::data::SIGNING_KEY_TYPE_GOSTR3410_TC26_A_512_GOSTR3411_512;
-
-	if(name.find("RED25519") != npos) return i2p::data::SIGNING_KEY_TYPE_REDDSA_SHA512_ED25519;	
 
 	return -1;
 }
