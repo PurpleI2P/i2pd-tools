@@ -363,7 +363,7 @@ int main (int argc, char * argv[])
      // there we gen key to buffer. That we mem allocate...
         const auto keys_len = i2p::data::PrivateKeys::CreateRandomKeys (options.signature).GetFullLen(); // is will be constant. so calculate every time is a bad way
      	auto KeyBufs = new uint8_t*[options.threads];//[keys_len];
-	for(auto i = options.threads-1; i--;) {
+	for(auto i = options.threads; i--;) {
 		KeyBufs[i] = new uint8_t[keys_len];
 		auto keys = i2p::data::PrivateKeys::CreateRandomKeys (options.signature);
      		keys.ToBuffer (KeyBufs[i], keys_len);
