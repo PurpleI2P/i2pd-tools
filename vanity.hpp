@@ -86,6 +86,6 @@ const uint8_t lastBlock[64] =
 	};
 
 #define DELKEYBUFS(S) {\
-for (unsigned i = S-1;i--;) \
+for (unsigned i = S;i--;) \
  delete [] KeyBufs[i];\
 delete [] KeyBufs;}
