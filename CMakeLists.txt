@@ -60,6 +60,9 @@ if(WITH_STATIC)
   endif()
 endif()
 
+# No tool uses the torrents RPC
+add_definitions(-DNO_TORRENTS)
+
 include_directories(${LIBI2PD_SRC_DIR})
 FILE(GLOB LIBI2PD_SRC ${LIBI2PD_SRC_DIR}/*.cpp)
 add_library(libi2pd ${LIBI2PD_SRC})
@@ -293,23 +296,17 @@ if(ZLIB_FOUND)
   link_directories(${ZLIB_ROOT}/lib)
 endif()
 
-# C++ standard to use, based on compiler and version of boost
+# C++ standard to use. libi2pd requires C++20
 if(NOT MSVC)
-# check for c++20 & c++17 support
+# check for c++20 support
   include(CheckCXXCompilerFlag)
 
-  if(Boost_VERSION VERSION_GREATER_EQUAL "1.83") # min boost version for c++20
-    CHECK_CXX_COMPILER_FLAG("-std=c++20" CXX20_SUPPORTED)
-  endif()
-  CHECK_CXX_COMPILER_FLAG("-std=c++17" CXX17_SUPPORTED)
- 
+  CHECK_CXX_COMPILER_FLAG("-std=c++20" CXX20_SUPPORTED)
 
   if(CXX20_SUPPORTED)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
-  elseif(CXX17_SUPPORTED)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
   else()
-    message(SEND_ERROR "C++20 nor C++17 standard not seems to be supported by compiler. Too old version?")
+    message(SEND_ERROR "C++20 standard not seems to be supported by compiler. Too old version?")
   endif()
 endif()
 
