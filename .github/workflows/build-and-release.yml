@@ -70,7 +70,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew update
-        brew install boost miniupnpc openssl@1.1 zlib
+        brew install boost miniupnpc openssl@3.5 zlib
 
     - name: Configure and build with CMake
       run: |
@@ -78,9 +78,9 @@ jobs:
         cd build
         cmake \
           -DWITH_UPNP=ON \
-          -DOPENSSL_ROOT_DIR="$HOMEBREW_PREFIX/opt/openssl@1.1" \
+          -DOPENSSL_ROOT_DIR="$HOMEBREW_PREFIX/opt/openssl@3.5" \
           -DBOOST_ROOT="$HOMEBREW_PREFIX/opt/boost" \
-          -DCMAKE_PREFIX_PATH="$HOMEBREW_PREFIX/opt/boost;$HOMEBREW_PREFIX/opt/miniupnpc;$HOMEBREW_PREFIX/opt/openssl@1.1" \
+          -DCMAKE_PREFIX_PATH="$HOMEBREW_PREFIX/opt/boost;$HOMEBREW_PREFIX/opt/miniupnpc;$HOMEBREW_PREFIX/opt/openssl@3.5" \
           -DZLIB_ROOT=$(brew --prefix zlib) \
           -DCMAKE_BUILD_TYPE=Release \
           -DFIND_BOOST_USE_CONFIG=OFF \
@@ -121,7 +121,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew update
-        brew install boost miniupnpc openssl@1.1 zlib
+        brew install boost miniupnpc openssl@3.5 zlib
 
     - name: Configure and build with CMake
       run: |
@@ -129,9 +129,9 @@ jobs:
         cd build
         cmake \
           -DWITH_UPNP=ON \
-          -DOPENSSL_ROOT_DIR="/opt/homebrew/opt/openssl@1.1" \
+          -DOPENSSL_ROOT_DIR="/opt/homebrew/opt/openssl@3.5" \
           -DBOOST_ROOT="/opt/homebrew/opt/boost" \
-          -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/boost;/opt/homebrew/opt/miniupnpc;/opt/homebrew/opt/openssl@1.1" \
+          -DCMAKE_PREFIX_PATH="/opt/homebrew/opt/boost;/opt/homebrew/opt/miniupnpc;/opt/homebrew/opt/openssl@3.5" \
           -DZLIB_ROOT=$(brew --prefix zlib) \
           -DCMAKE_BUILD_TYPE=Release \
           -DFIND_BOOST_USE_CONFIG=OFF \
